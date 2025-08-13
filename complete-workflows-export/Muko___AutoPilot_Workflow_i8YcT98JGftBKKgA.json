@@ -1,0 +1,694 @@
+{
+  "createdAt": "2025-08-05T14:38:38.512Z",
+  "updatedAt": "2025-08-05T14:38:50.913Z",
+  "id": "i8YcT98JGftBKKgA",
+  "name": "Muko - AutoPilot Workflow",
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "readStatus": "unread",
+          "sender": "lvbendjong@gmail.com"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -832,
+        176
+      ],
+      "id": "357ec542-5743-4b5b-8b03-1192ee055f6a",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "zcDQMlj13LLc72wb",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  t.tenant_id,\n  t.bedrijfsnaam,\n  t.ai_persona_name,\n  t.ai_signature_html,\n  t.annulering_toegestaan_dagen,\n  t.adreswijziging_toegestaan_dagen,\n  t.maximaal_extra_compensatie,\n  t.retouradres,\n  JSON_AGG(\n    JSON_BUILD_OBJECT(\n      'rule_key', COALESCE(tbr.rule_key, m.rule_key),\n      'rule_name', m.rule_name,\n      'rule_config', tbr.rule_config,\n      'html_template', tbr.html_template,\n      'category', m.category\n    )\n  ) AS business_rules\nFROM tenants t\nLEFT JOIN tenant_business_rules tbr \n  ON t.tenant_id = tbr.tenant_id\n  AND tbr.is_active = true\nLEFT JOIN master_business_rules m\n  ON m.rule_key = tbr.rule_key\nWHERE t.gmail_email = '{{ $node[\"Email parser\"].json.tenant_email }}'\n  AND t.active = true\nGROUP BY t.tenant_id;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        48,
+        64
+      ],
+      "id": "f4e17296-326e-4b10-8f8f-146603427c2e",
+      "name": "Get tenant data",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "KpdXYnkZStlD3p2g",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  ci.id,\n  ci.thread_id,\n  ci.message_body,\n  ci.ai_response,\n  ci.type,\n  ci.status,\n  ci.compensatie_percentage,\n  ci.ladder_stap,\n  ci.created_at,\n  ct.total_interactions\nFROM conversation_threads ct\nLEFT JOIN customer_interactions ci ON ct.thread_id = ci.thread_id\nWHERE ct.customer_email = '{{ $node[\"Email parser\"].json.customer_email }}'\n  AND ct.tenant_id = (\n    SELECT tenant_id FROM tenants WHERE gmail_email = '{{ $node[\"Email parser\"].json.tenant_email }}'\n  )\nORDER BY ci.created_at DESC\nLIMIT 10;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        384,
+        80
+      ],
+      "id": "ebb6fc7d-b44e-481a-a5e8-b96d4677fc60",
+      "name": "Get Conversation History",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "KpdXYnkZStlD3p2g",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function toText(html){ return String(html||'').replace(/<[^>]+>/g,' ').replace(/\\s{2,}/g,' ').trim(); }\nfunction lower(x){ return String(x||'').toLowerCase(); }\n\nconst email   = $node[\"Email body cleaner\"].json || {};\nconst tenant  = $node[\"Get tenant data\"].json || {};\nlet history   = Array.isArray($node[\"Get Conversation History\"].json) ? $node[\"Get Conversation History\"].json : [];\nconst lookup  = $node[\"Conversation Thread Lookup\"].json || [];\nconst gen     = $node[\"Thread ID Generator\"].json || [];\n\nconst rulesList = tenant.business_rules || [];\nconst rules = Object.fromEntries(rulesList.map(r => [r.rule_key, r.rule_config || {}]));\n\nconst locale = tenant.locale?.split('-')[0] || 'nl';\n\n// ======== Klantnaam uit ondertekening (multi-language)\nlet klantnaam = email.detected_signature_name || email.customer_name || \"\";\nif (!klantnaam) klantnaam = (email.customer_email || \"\").split(\"@\")[0];\n\n// ======== Mood detectie\nconst negativeWordsPerTaal = {\n  nl: [\"niet blij\", \"ontevreden\", \"slecht\", \"teleurgesteld\", \"waardeloos\", \"lang wachten\", \"super lang\", \"erg langzaam\", \"niet tevreden\", \"onvoldoende\", \"te weinig\", \"jammer\", \"helaas\", \"ben niet blij\", \"onacceptabel\", \"onprettig\", \"geen zin\", \"klaar mee\", \"vreselijk\"],\n  en: [\"not happy\", \"dissatisfied\", \"bad\", \"disappointed\", \"poor\", \"waiting too long\", \"super long\", \"very slow\", \"unhappy\", \"insufficient\", \"unfortunately\"],\n  de: [\"nicht zufrieden\", \"schlecht\", \"enttäuscht\", \"wartet zu lange\", \"ärgerlich\", \"nicht genug\", \"leider\"]\n};\nconst body = lower(email.cleaned_body || email.email_body || \"\");\nconst negativeWords = negativeWordsPerTaal[locale] || negativeWordsPerTaal.nl;\nconst mood = negativeWords.some(w => body.includes(w)) ? \"negative\" : \"neutral\";\n\n// ======== Business rule configs\nconst ladderRaw = rules.compensatie_ladder || {};\nconst ladderCfg = {\n  stappen: ladderRaw.stappen || [15, 20, 30, 40],\n  dreiging_percentage: ladderRaw.dreiging_percentage ?? ladderRaw.dreiging ?? 50,\n  onderhandeling_marge: ladderRaw.onderhandeling_marge ?? ladderRaw.max_extra_percentage ?? 15,\n  max_totaal_normaal: ladderRaw.max_totaal_normaal ?? ladderRaw.max_normaal ?? 40,\n  max_totaal_dreiging: ladderRaw.max_totaal_dreiging ?? ladderRaw.max_dreiging_totaal ?? 65,\n  retour_na_weigering: ladderRaw.retour_na_weigering ?? true\n};\nconst weigering = rules.weigering_detectie || { triggers:['nee','niet akkoord','ik wil retourneren','stuur adres','retour adres','ik wil terugsturen','onvoldoende','te weinig','helaas niet','jammer'], alleen_binnen_categorie:true };\nconst deliveryCfg = rules.levering_logica   || { drempel_1:5, drempel_2:9, normale_levertijd_werkdagen:'6-9' };\n\nconst annuleerMax = tenant.annulering_toegestaan_dagen ?? (rules.annulering_policy?.max_dagen_na_bestelling ?? 14);\nconst adresMax    = tenant.adreswijziging_toegestaan_dagen ?? rules.adreswijziging_policy?.max_dagen_na_bestelling ?? 7;\nconst retourAdres = tenant.retouradres || \"\";\n\n// ======== Slimme ladder/teller — **DIT IS DE FIX**\nlet refusal_count = 0;\nif (history.length > 0) {\n  for (let h of history) {\n    if (\n      ['compensation', 'return'].includes((h.type||'').toLowerCase()) &&\n      (h.refusal_detected === true || (typeof h.refusal_detected === 'string' && h.refusal_detected.toLowerCase() === 'true'))\n    ) {\n      refusal_count += 1;\n    }\n  }\n}\nlet ladder_stap = 1 + refusal_count;\n\n// Herken weigering in huidige klantbericht\nconst refusalHit = (weigering.triggers || []).some(t => body.includes(lower(t)));\nlet aiRefusalDetected = false;\nif (refusalHit) {\n  aiRefusalDetected = true;\n  ladder_stap += 1; // **Extra stap direct omhoog**\n}\n\n// Cap op max\nif (ladder_stap > ladderCfg.stappen.length) ladder_stap = ladderCfg.stappen.length;\nconst stepPercent = ladderCfg.stappen[ladder_stap-1] ?? ladderCfg.stappen[0];\n\n// ======== Dagen-detectie (uit tekst of history)\nfunction detectDaysSinceOrder(text) {\n  let days = null;\n  if (/gisteren|yesterday/i.test(text)) days = 1;\n  else if (/eergisteren|the day before yesterday/i.test(text)) days = 2;\n  else if (/vorige week|last week/i.test(text)) days = 7;\n  else if (/(\\d+) dagen? geleden|(\\d+) days? ago/i.test(text)) {\n    const match = text.match(/(\\d+)\\s*dagen? geleden|(\\d+)\\s*days? ago/i);\n    days = parseInt(match[1] || match[2], 10);\n  }\n  return days;\n}\nconst daysFromText = detectDaysSinceOrder(body);\nfunction daysSinceFirstContact(){\n  if (!history.length) return null;\n  const oldest = history[history.length-1];\n  try { return Math.floor((Date.now() - new Date(oldest.created_at).getTime()) / (1000*60*60*24)); }\n  catch { return null; }\n}\nconst daysFromHistory = daysSinceFirstContact();\nconst days = daysFromText ?? daysFromHistory;\n\n// ======== Dreiging?\nconst threatWords = (rules.dreiging_detectie?.trefwoorden || []).map(lower);\nconst isThreat = threatWords.some(kw => body.includes(kw));\n\n// ======== Volledige conversatie (voor logging/metadata & AI-context)\nconst conversation = history.slice(0, 5).map((h, i) => ({\n  nr: i + 1,\n  klant: toText(h.message_body || ''),\n  ai: toText(h.ai_response  || ''),\n  type: (h.type || '').toLowerCase(),\n  ladder_stap: h.ladder_stap ?? null,\n  refusal_detected: h.refusal_detected ?? false,\n  created_at: h.created_at || null,\n}));\n\n// ======== AI-prompt (met alles wat je wilt, zie je eigen instructies)\nlet prompt = `\n**LET OP:**\n- JE MAG NOOIT de woorden 'retour', 'retourneren', 'geld terug', 'terugsturen' of het retouradres benoemen, tenzij klant weigert op de hoogste compensatiestap (max_ladder). Alleen DAN mag je het retouradres geven!\n- In alle andere gevallen: bied alleen een compensatiepercentage aan, focus op het behouden van het product bij de klant.\n- Alleen bij status \"max_refused\" mag je het retouradres sturen, vermeld: 'De retourkosten zijn voor de klant. Zie retourbeleid op de website.'\n\nJe bent ${tenant.ai_persona_name || 'Eva'}, professionele klantenservice van ${tenant.bedrijfsnaam || 'onze winkel'}. Schrijf menselijk, natuurlijk en **VARIEER altijd je zinnen** (geen standaardantwoorden), wees vriendelijk en empathisch, en pas je toon aan op basis van de emotie/mood van de klant.\n\n**INSTRUCTIES:**\n- Begrijp altijd het bericht en de frustratie of wens van de klant (noem deze expliciet).\n- Bied **precies het juiste percentage van de ladder** (${ladderCfg.stappen.join(', ')}) aan bij elke weigering, zonder te verwijzen naar contactmomenten of 'eerste/volgende aanbieding'.\n- Elke volgende weigering = **volgende stap in ladder**.\n- **Nooit** klant vragen: “Wat wilt u zelf?” of “Wat zou u passend vinden?”; AI biedt altijd zelf iets aan.\n- Variatie verplicht: andere openingszinnen, nooit dubbele sign-off, nooit dezelfde bewoording.\n- Nooit over retour of geld terug praten, tenzij max ladder-stap geweigerd!\n- Toon altijd begrip, en maak het aanbod persoonlijk (“We hopen dat deze tegemoetkoming het voor je goed maakt.”)\n- Als klant akkoord: status “accepted”, als hoogste stap geweigerd: status “max_refused” (retouradres sturen).\n- Gebruik ALLE context en history (zie hieronder) voor je antwoord.\n- Voeg altijd een JSON-output toe zoals hieronder:\n\n**GESPREKSGESCHIEDENIS:** (nieuwste boven)\n${conversation.length ? conversation.map(c => \n`[${c.created_at || ''}] KLANT: \"${c.klant}\" | AI: \"${c.ai}\"${c.ladder_stap ? ' (ladder:' + c.ladder_stap + ')' : ''}`\n).join('\\n') : 'Geen eerdere gesprekken.'}\n\n**HUIDIGE KLANT:**\nNaam: ${klantnaam}\nOnderwerp: ${email.subject || \"\"}\nBericht: ${email.cleaned_body || email.email_body}\nMood (AI-detectie): ${mood}\n\n**CONTACT:**\n- Ladder-stap te hanteren: ${ladder_stap} ⇒ ${stepPercent}% (tenzij onderhandeling expliciet hoger vraagt)\n- Dagen sinds bestelling (geschat): ${days !== null ? days : \"onbekend\"}\n\n**OUTPUT (1 JSON object):**\n{\n  \"ai_response\": \"<p>...</p>\",\n  \"status\": \"processed\" | \"escalated\" | \"max_refused\" | \"accepted\",\n  \"type\": \"general\" | \"delivery\" | \"cancellation\" | \"address_change\" | \"compensation\" | \"return\" | \"threat\" | \"confirmation_missing\" | \"change_order_request\",\n  \"compensatie_percentage\": ${stepPercent},\n  \"ladder_stap\": ${ladder_stap},\n  \"mood_detected\": \"${mood}\",\n  \"refusal_detected\": ${aiRefusalDetected},\n  \"interpretation\": \"\"\n}\n`;\n\n// ======== OUTPUT: ALLES incl. conversation array voor metadata!\nreturn [{\n  json: { \n    chatInput: prompt, \n    mood_detected: mood, \n    klantnaam, \n    ladder_stap,\n    stepPercent,\n    aiRefusalFallback: aiRefusalDetected, \n    days,\n    conversation \n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1152,
+        480
+      ],
+      "id": "e8d7931c-646d-4794-b572-fcd32f27f447",
+      "name": "AI Context Builder",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "function safeParse(x){ if (typeof x !== 'string') return x; try{ return JSON.parse(x); } catch{ return {}; } }\n\nconst raw = $node[\"Message a model1\"].json;\nconst content = raw?.choices?.[0]?.message?.content;\nif (!content) throw new Error(\"Geen AI-payload!\");\nconst payload = (typeof content === \"object\") ? content : safeParse(content);\n\nconst contextBuilder = $node[\"AI Context Builder\"].json || {};\nconst fallbackRefusal = contextBuilder.aiRefusalFallback === true;\nconst days = contextBuilder.days ?? null;\nconst conversation = contextBuilder.conversation || [];  // <--- Toevoegen!\n\n// Thread/DB\nconst upsert = $node[\"Conversation Thread Upsert\"].json || {};\nconst thread_id = upsert.thread_id || $node[\"Thread ID Generator\"].json.thread_id;\nconst dbTotal   = (typeof upsert.total_interactions === 'number') ? upsert.total_interactions : null;\nconst genCount  = $node[\"Thread ID Generator\"].json.contact_count || 1;\nconst contact_count = dbTotal ?? genCount;\n\n// Tenant/signature\nconst tenant = $node[\"Get tenant data\"].json || {};\nconst persona = tenant.ai_persona_name || 'Eva';\nconst bedrijf = tenant.bedrijfsnaam || '';\nconst signature = `<br>Met vriendelijke groet,<br>${persona}${bedrijf ? ' – ' + bedrijf : ''}`;\n\nlet ai_response = String(payload.ai_response || \"\");\n\n// Voeg retouradres toe bij max_refused\nif ((payload.status || '').toLowerCase() === \"max_refused\") {\n  const addr = tenant.retouradres || \"\";\n  if (addr) {\n    ai_response += `<p>Het retouradres is:<br>${addr}.<br>Let op: de retourkosten zijn voor de klant.</p>`;\n  }\n}\n\n// voorkom dubbele sign-off\nconst norm = ai_response.replace(/\\s+/g,' ').toLowerCase();\nconst normSig = signature.replace(/\\s+/g,' ').toLowerCase();\nif (!norm.includes(normSig)) ai_response += signature;\n\n// refusal_detected: AI is leidend, maar keyword fallback vangt alles op!\nlet refusal_detected = payload.refusal_detected === true || fallbackRefusal;\n\nreturn [{\n  json: {\n    ai_response,\n    status: (payload.status || \"processed\").toLowerCase(),\n    type: (payload.type   || \"general\").toLowerCase(),\n    compensatie_percentage: payload.compensatie_percentage ?? null,\n    ladder_stap: payload.ladder_stap ?? 1,\n    mood_detected: payload.mood_detected ?? null,\n    refusal_detected,\n    interpretation: payload.interpretation || \"\",\n    days,\n    confidence_score: payload.confidence_score ?? 0,\n    alert_type: payload.alert_type ?? null,\n    next_action: payload.next_action || \"await_response\",\n    thread_id,\n    contact_count,\n    tenant_id: tenant.tenant_id,\n    klantnaam: payload.klantnaam || contextBuilder.klantnaam || null,\n    conversation, // <-- Belangrijk!\n    original_email: $node[\"Email body cleaner\"].json\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2096,
+        256
+      ],
+      "id": "920ea49d-4f26-4bb4-9541-49077ed2f81f",
+      "name": "Response Parser",
+      "alwaysOutputData": true,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f0c30eeb-d06a-4ab4-bffa-3fc30cf841d8",
+              "leftValue": "={{$json[\"alert_type\"]}}",
+              "rightValue": "=escalated",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": "=",
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2464,
+        240
+      ],
+      "id": "41b1523d-5537-47dc-954c-104141bb517e",
+      "name": "If",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $node[\"Email parser\"].json.customer_email }}",
+        "subject": "={{ $node[\"Email parser\"].json.subject }}",
+        "message": "<p>We hebben uw bericht ontvangen en escaleren dit naar onze manager. U hoort binnen 24 uur van ons.</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3472,
+        80
+      ],
+      "id": "8e12a6f4-a29a-4647-b40e-4689e24761ad",
+      "name": "Gmail Send Escalation",
+      "webhookId": "d2a1b0b6-2b63-449b-a9eb-75f490315f7b",
+      "alwaysOutputData": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "zcDQMlj13LLc72wb",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO escalations (\n  tenant_id, thread_id, escalation_type, escalation_level, trigger_reason, created_at\n) VALUES (\n  '{{ $json.tenant_id }}'::uuid,\n  '{{ $json.thread_id }}'::uuid,\n  'ai_escalation',\n  COALESCE({{ $json.ladder_stap }}, 0),\n  COALESCE('{{ $json.escalation_reason }}','dreiging'),\n  now()\n);\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3264,
+        80
+      ],
+      "id": "84139297-08cc-4623-8280-28504fb94eed",
+      "name": "Postgres Insert Escalation",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "KpdXYnkZStlD3p2g",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $node[\"Email body cleaner\"].json.customer_email }}",
+        "subject": "={{ $node[\"Email body cleaner\"].json.subject }}",
+        "message": "={{ $node[\"Response Parser\"].json.ai_response }}",
+        "options": {
+          "appendAttribution": false,
+          "replyToSenderOnly": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3344,
+        352
+      ],
+      "id": "82e74c95-74fa-441a-b04f-6c53a5612158",
+      "name": "Gmail Send Normal",
+      "webhookId": "bb668871-8f95-4154-8031-28ae394bbf3e",
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "zcDQMlj13LLc72wb",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO customer_interactions (\n  tenant_id,\n  thread_id,\n  customer_email,\n  contact_count,\n  message_body,\n  ai_response,\n  status,\n  type,\n  compensatie_percentage,\n  ladder_stap,\n  escalation_reason,\n  mood_detected,\n  confidence_score,\n  refusal_detected,\n  interpretation,\n  klantnaam,\n  days,\n  created_at,\n  metadata\n) VALUES (\n  '{{ $json.tenant_id }}'::uuid,\n  '{{ $json.thread_id }}'::uuid,\n  '{{ $node[\"Email body cleaner\"].json.customer_email || \"\" }}',\n  {{ $json.contact_count }},\n  '{{ $node[\"Email body cleaner\"].json.email_body || \"\" | replace(\"'\", \"''\") }}',\n  '{{ $json.ai_response || \"\" | replace(\"'\", \"''\") }}',\n  '{{ $json.status || \"\" }}',\n  '{{ $json.type || \"\" }}',\n  COALESCE({{ $json.compensatie_percentage }}, 0),\n  COALESCE({{ $json.ladder_stap }}, 1),\n  {{ $json.escalation_reason ? \"'\" + $json.escalation_reason + \"'\" : \"NULL\" }},\n  {{ $json.mood_detected ? \"'\" + $json.mood_detected + \"'\" : \"NULL\" }},\n  COALESCE({{ $json.confidence_score }}, 0),\n  {{ $json.refusal_detected ? 'TRUE' : 'FALSE' }},\n  {{ $json.interpretation ? \"'\" + $json.interpretation.replace(\"'\", \"''\") + \"'\" : \"NULL\" }},\n  {{ $json.klantnaam ? \"'\" + $json.klantnaam + \"'\" : \"NULL\" }},\n  {{ $json.days != null ? $json.days : \"NULL\" }},\n  NOW(),\n  to_jsonb({{ $json | json }})\n);\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        3056,
+        368
+      ],
+      "id": "e988d58e-3a26-41a8-9387-25710ce08a6e",
+      "name": "Postgres Store Interaction",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "KpdXYnkZStlD3p2g",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=={{ $json.chatInput }}"
+            }
+          ]
+        },
+        "simplify": false,
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1472,
+        464
+      ],
+      "id": "2086e259-291a-4730-ac1f-1a3236fa8be4",
+      "name": "Message a model1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "4cc05BkVx7V6XeAC",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse inkomende Gmail-trigger naar bruikbare velden (+ naam uit From)\nconst email = $input.first().json;\n\nconst fromHeader  = email.From || email.from || \"\";\nconst toHeader    = email.To || email.to || \"\";\nconst nameMatch   = fromHeader.match(/^\"?([^\"<]+?)\"?\\s*<.+>$/);\nconst customer_name = (nameMatch && nameMatch[1]) ? nameMatch[1].trim() : null;\n\nconst match       = fromHeader.match(/<(.+)>/);\nconst customer_email = match ? match[1] : String(fromHeader || \"\").trim();\n\nconst email_body = email.textHtml || email.textPlain || email.snippet || \"\";\nconst subject    = (email.Subject || email.subject || email.snippet || \"Geen onderwerp\").toString().trim();\nconst tenant_email = toHeader || \"\";\nconst email_id   = email.id || email.internalDate;\nconst received_at = new Date().toISOString();\n\nreturn [{\n  json: {\n    tenant_email,\n    customer_email,\n    customer_name,\n    email_body,\n    subject,\n    email_id,\n    received_at\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        80
+      ],
+      "id": "5485b737-6e15-4888-bbcd-7d66b70cadd3",
+      "name": "Email parser",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "function uuidv4(){\n  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c=>{\n    const r = Math.random()*16|0, v = c==='x'? r : (r&0x3|0x8);\n    return v.toString(16);\n  });\n}\n\nconst lookup = $node[\"Conversation Thread Lookup\"].json;\nlet thread_id, is_new_thread, contact_count;\n\nif (Array.isArray(lookup) && lookup[0]?.thread_id) {\n  thread_id = lookup[0].thread_id;\n  const total = Number(lookup[0].total_interactions || 0);\n  contact_count = total + 1;   // volgende contact\n  is_new_thread = false;\n} else {\n  thread_id = uuidv4();\n  contact_count = 1;\n  is_new_thread = true;\n}\n\nreturn [{ json: { thread_id, is_new_thread, contact_count } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        112
+      ],
+      "id": "aefad162-a95e-4c90-ad2f-a975347268ae",
+      "name": "Thread ID Generator",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO conversation_threads (\n  customer_email, tenant_id, thread_id, total_interactions, last_contact_date\n) VALUES (\n  '{{ $node[\"Email body cleaner\"].json.customer_email }}',\n  '{{ $node[\"Get tenant data\"].json.tenant_id }}'::uuid,\n  '{{ $node[\"Thread ID Generator\"].json.thread_id }}'::uuid,\n  1,\n  now()\n)\nON CONFLICT (customer_email, tenant_id) DO UPDATE\nSET\n  total_interactions = conversation_threads.total_interactions + 1,\n  last_contact_date  = now(),\n  updated_at         = now()\nRETURNING\n  conversation_threads.thread_id,\n  conversation_threads.total_interactions;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1280,
+        144
+      ],
+      "id": "d4e99b37-3c49-4469-b034-7f089c7af2d9",
+      "name": "Conversation Thread Upsert",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "KpdXYnkZStlD3p2g",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT thread_id, total_interactions\nFROM conversation_threads\nWHERE tenant_id = '{{ $node[\"Get tenant data\"].json.tenant_id }}'::uuid\n  AND lower(customer_email) = lower('{{ $node[\"Email body cleaner\"].json.customer_email }}')\nORDER BY last_contact_date DESC\nLIMIT 1;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        704,
+        80
+      ],
+      "id": "209e3729-16a6-4f8c-ba97-c1fee4cc3bfc",
+      "name": "Conversation Thread Lookup",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "KpdXYnkZStlD3p2g",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1856,
+        336
+      ],
+      "id": "921b7c95-a77a-4872-adfd-dbe098504597",
+      "name": "Merge1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "markAsRead",
+        "messageId": "={{ $node[\"Email body cleaner\"].json.email_id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3552,
+        352
+      ],
+      "id": "1ab7fb20-8d66-499d-bc3a-2969ca88bbd2",
+      "name": "Mark a message as read",
+      "webhookId": "b4ddf576-b03e-44ae-bff4-866845c1e20e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "zcDQMlj13LLc72wb",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "let input = $node[\"Email parser\"]?.json;\nif (!input) throw new Error(\"Email parser heeft geen output!\");\nlet html = input.email_body || \"\";\n\n// Quotes/Gmail reply blokken strippen\nhtml = html\n  .replace(/<blockquote[\\s\\S]*?<\\/blockquote>/gi, \"\")\n  .replace(/<div class=\"gmail_quote\"[\\s\\S]*?$/gi, \"\");\n\n// \"On ... wrote/schreef:\"\nhtml = html.replace(/On .* (wrote|schreef):[\\s\\S]*/i, \"\");\n\n// HTML → plain text, quotes weg\nlet text = html\n  .replace(/<style[\\s\\S]*?<\\/style>/gi, \"\")\n  .replace(/<script[\\s\\S]*?<\\/script>/gi, \"\")\n  .replace(/<[^>]+>/g, \" \")\n  .replace(/^[>].*$/gmi, \"\")\n  .replace(/\\s{2,}/g, \" \")\n  .trim();\n\nfor (const r of [\n  /-{2,}\\s*Original Message\\s*-{2,}/i,\n  /-{2,}\\s*Oorspronkelijk bericht\\s*-{2,}/i\n]) { if (r.test(text)) { text = text.split(r)[0].trim(); break; } }\n\nreturn [{\n  json: {\n    ...input,\n    cleaned_body: text\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        272
+      ],
+      "id": "46548898-3d2c-48ef-80e2-37689cb8a7a7",
+      "name": "Email body cleaner",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO notifications (tenant_id, thread_id, type, payload, created_at)\nSELECT\n  '{{ $json.tenant_id }}'::uuid,\n  '{{ $json.thread_id }}'::uuid,\n  {{ $json.alert_type ? \"'\" + $json.alert_type + \"'\" : \"NULL\" }},\n  jsonb_build_object(\n    'status', '{{ $json.status }}',\n    'type',   '{{ $json.type }}',\n    'compensatie_percentage', COALESCE({{ $json.compensatie_percentage }}, 0),\n    'ladder_stap', COALESCE({{ $json.ladder_stap }}, 1),\n    'customer_email', '{{ $node[\"Email body cleaner\"].json.customer_email }}',\n    'subject', '{{ $node[\"Email body cleaner\"].json.subject }}'\n  ),\n  now()\nWHERE {{ $json.alert_type ? 'true' : 'false' }};\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2768,
+        144
+      ],
+      "id": "6763ca80-9727-4c2f-a4b7-659ce49946eb",
+      "name": "Postgres Insert Notification",
+      "credentials": {
+        "postgres": {
+          "id": "KpdXYnkZStlD3p2g",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Email parser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get tenant data": {
+      "main": [
+        [
+          {
+            "node": "Get Conversation History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Conversation History": {
+      "main": [
+        [
+          {
+            "node": "Conversation Thread Lookup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Context Builder": {
+      "main": [
+        [
+          {
+            "node": "Message a model1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Response Parser": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Postgres Insert Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Postgres Store Interaction",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Insert Escalation": {
+      "main": [
+        [
+          {
+            "node": "Gmail Send Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Send Normal": {
+      "main": [
+        [
+          {
+            "node": "Mark a message as read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Email parser": {
+      "main": [
+        [
+          {
+            "node": "Email body cleaner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Thread ID Generator": {
+      "main": [
+        [
+          {
+            "node": "Conversation Thread Upsert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation Thread Upsert": {
+      "main": [
+        [
+          {
+            "node": "AI Context Builder",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation Thread Lookup": {
+      "main": [
+        [
+          {
+            "node": "Thread ID Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Store Interaction": {
+      "main": [
+        [
+          {
+            "node": "Gmail Send Normal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Response Parser",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email body cleaner": {
+      "main": [
+        [
+          {
+            "node": "Get tenant data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Insert Notification": {
+      "main": [
+        [
+          {
+            "node": "Postgres Insert Escalation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "versionId": "6def6a88-ce4c-466e-8f29-59b44089c3fe",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "createdAt": "2025-08-05T14:38:38.512Z",
+      "updatedAt": "2025-08-05T14:38:38.512Z",
+      "role": "workflow:owner",
+      "workflowId": "i8YcT98JGftBKKgA",
+      "projectId": "tQHnNnumxRAVa2Qs",
+      "project": {
+        "createdAt": "2025-07-29T12:00:03.838Z",
+        "updatedAt": "2025-07-29T12:10:09.860Z",
+        "id": "tQHnNnumxRAVa2Qs",
+        "name": "Jordy Hazenberg <jordyhaass@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "projectRelations": [
+          {
+            "createdAt": "2025-07-29T12:00:03.838Z",
+            "updatedAt": "2025-07-29T12:00:03.838Z",
+            "role": "project:personalOwner",
+            "userId": "edf4c9ed-4d15-4185-8e57-a7ce52060e4c",
+            "projectId": "tQHnNnumxRAVa2Qs",
+            "user": {
+              "createdAt": "2025-07-29T11:59:55.259Z",
+              "updatedAt": "2025-08-13T18:04:21.981Z",
+              "id": "edf4c9ed-4d15-4185-8e57-a7ce52060e4c",
+              "email": "jordyhaass@gmail.com",
+              "firstName": "Jordy",
+              "lastName": "Hazenberg",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-07-29T12:10:13.377Z",
+                "personalization_survey_n8n_version": "1.104.1",
+                "companyType": "saas"
+              },
+              "settings": {
+                "userActivated": true,
+                "firstSuccessfulWorkflowId": "aaGkqEHqI90UOCkY",
+                "userActivatedAt": 1754507013819,
+                "easyAIWorkflowOnboarded": true,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1754248238134
+                }
+              },
+              "role": "global:owner",
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-08-13",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": []
+}
