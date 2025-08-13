@@ -1,0 +1,171 @@
+Zeker, hier volgt een volledig en overzichtelijk projectoverzicht van jouw AI-klantenservice systeem: Wat kan de AI? Wat zijn de mogelijkheden? Waar en hoe pas je alles aan? Welke node doet wat? Hoe is alles opgebouwd?
+
+🚀 AI Klantenservice Autopilot – Volledig Overzicht & Mogelijkheden
+
+🔎 1. Introductie & Doel van het Project
+Je bouwt een schaalbare, multi-tenant AI-klantenservice voor (fashion) webshops, waarbij:
+	•	AI volledig autonoom klantvragen per e-mail én live chat verwerkt (inclusief klachten, retouren, leveringsproblemen, compensatie, annulering, adreswijziging, dreiging, onderhandeling, etc.)
+	•	Business rules, compensatie-escalaties, templates en notificaties per tenant (klant/bedrijf) instelbaar zijn
+	•	Alles realtime inzichtelijk is in een modern dashboard, per bedrijf geïsoleerd via RLS (Row Level Security)
+
+🧠 2. Wat kan jouw AI allemaal?
+A. Klantvragen automatisch herkennen & classificeren
+	•	Retourverzoeken (“ik wil graag retourneren”, “past niet”, etc.)
+	•	Klachten (“ben niet blij”, “slecht product”, etc.)
+	•	Leveringsproblemen (“nog niet ontvangen”, “waar blijft mijn pakket?”)
+	•	Annuleringen/adreswijzigingen (“bestelling annuleren”, “adres wijzigen”)
+	•	Dreiging/escalatie (“ik stap naar de advocaat”, “ik dien een klacht in”)
+	•	Onderhandeling (“kan ik meer korting krijgen?”)
+	•	Positieve feedback (“bedankt”, “tevreden”)
+B. Volledig contextuele, menselijke antwoorden geven
+	•	AI reageert altijd op basis van volledige klantgeschiedenis (laatste 5 contacten als context)
+	•	Antwoorden zijn menselijk, warm, empathisch, gevarieerd (geen robot!)
+	•	Sign-off (afsluiting) altijd correct, nooit dubbel
+C. Compensatieladder & onderhandeling
+	•	Elk contactmoment/klacht: automatisch juiste percentage aanbieden (bv. 15%, 20%, 30%, 40%)
+	•	Bij weigering van aanbod → volgende ladderstap
+	•	Bij expliciete onderhandeling → eenmalig +max% (uit business rule)
+	•	Nooit retouradres of geld-terug noemen vóór max_ladder-stap
+	•	Automatisch terugschakelen als klant later toch akkoord gaat met lager bod
+D. Dreiging & escalatie
+	•	Herkent woorden als “advocaat”, “politie”, “aangifte”
+	•	Zet status direct op escalated, triggert notification voor support/admin
+	•	Niet retroactief: alleen als in eerste (of tweede) bericht dreiging is
+E. Mood & emotieherkenning
+	•	Detecteert negatieve, neutrale, positieve moods uit tekst (NL/EN/DE)
+	•	Past openingszin/toon aan op emotie klant
+F. Meertaligheid
+	•	Herkent NL/EN/DE automatisch (via tenant of tekst)
+	•	Antwoord volledig in taal klant
+G. Days-since-order detectie
+	•	Herkent uit tekst (“vorige week”, “gisteren”, “5 dagen geleden”)
+	•	Past beleid hierop aan (leveringsvragen, annulering, retour buiten termijn)
+H. Automatische logging & audit
+	•	Elke interactie volledig opgeslagen: AI-output, context, history, status, interpretatie, escalatie, ladder, mood, etc.
+	•	Notificaties aangemaakt bij dreiging, max_refused, high volume, etc.
+	•	Alle acties direct zichtbaar in dashboard
+
+⚙️ 3. Waar en hoe pas je alles aan? (Business Rules & Configuratie)
+	•	Alle regels, triggers, templates, dagen, percentages staan in de database in:
+	•	tenant_business_rules
+	•	Per regel:
+	•	rule_key (bv. compensatie_ladder, dreiging_detectie, maatprobleem)
+	•	rule_config (JSON met: stappen, triggerwoorden, percentages, max extra, etc.)
+	•	html_template (voorbeeldmail, met variabelen als {{percentage}})
+	•	tenants
+	•	ai_persona_name, bedrijfsnaam, retouradres, dagen annulering, max compensatie, shop_url, etc.
+	•	Via dashboard (LoveAble) kun je alle regels live aanpassen:
+	•	Compensatieladder (stappen, percentages)
+	•	Triggerwoorden voor elke klacht
+	•	Templates per scenario (HTML mailvoorbeelden)
+	•	Dagen voor retouren/annulering/adreswijziging
+	•	Notificatie-voorkeuren, escalatie-instellingen
+	•	Email filters (spam, whitelist, blacklist) beheer je in de email_filters tabel en dashboard.
+
+📊 4. Welke node doet wat? (Flowmapping n8n Blueprint)
+Node
+Wat doet deze node?
+Gmail Trigger
+Ontvangt nieuwe inkomende klantmails
+Email Parser
+Extraheert klantnaam, e-mailadres, onderwerp, body, email-id
+Email Body Cleaner
+Stript oude replies, HTML, ondertekening, noise uit body, maakt “cleaned_body”
+Get Tenant Data
+Zoekt juiste tenant + business rules bij mailadres/tenant
+Conversation Thread Lookup
+Zoekt bestaande thread per klant/tenant of maakt een nieuwe aan
+Thread ID Generator
+Bepaalt thread_id en contact_count voor juiste flow/mapping
+Get Conversation History
+Haalt laatste interacties op (voor AI-context, ladder, history, weigering, etc.)
+AI Context Builder
+Bouwt contextuele AI-prompt: mood, scenario, ladder, history, refusal, escalatie, days, templates, etc.
+OpenAI Call
+Stuurt prompt naar AI, vraagt JSON-output en HTML reactie
+Response Parser
+Splitst output, sign-off check, refusal/acceptatie, klaarmaakt voor insert en notificaties
+Store Interaction
+Schrijft interactie, alle velden en metadata in customer_interactions
+Update Conversation Thread
+Update thread met nieuwe context/mood/conversation_context
+Store Notification
+Slaat notificatie op (dreiging, escalatie, max_refused, etc.)
+Gmail Send
+Stuurt AI-reactie terug naar klant, altijd in correcte stijl
+Mark as Read
+Zet originele mail op gelezen
+Email Filter Check (TODO)
+Matcht e-mail op spam/black/white filters uit database vóór AI-verwerking
+
+🗃️ 5. Database structuur – hoe is alles gekoppeld?
+Tabel
+Koppeling
+Doel
+tenants
+tenant_id in alles
+Bedrijfsinstellingen, AI settings, retouradres, taal, etc.
+profiles
+user_id ↔ tenant_id
+Users/admins, teambeheer, rollen
+customer_interactions
+thread_id, tenant_id, alles gelogd
+Elk klantcontact, AI-output, status, mood, ladder, etc.
+conversation_threads
+thread_id, tenant_id, customer_email
+Gespreksdraad met context/history
+notifications
+thread_id, tenant_id, type, priority, action
+Alerts, escalaties, reminders, status, badges
+tenant_business_rules
+tenant_id, rule_key, rule_config, html_template
+Regels/triggerwoorden/templates per scenario
+master_business_rules
+master_key, rule_config, html_template
+Default templates voor nieuwe tenants
+email_filters
+tenant_id, type, pattern, pattern_type
+Spam/whitelist/blacklist/regex filter
+chat_sessions
+tenant_id, user_email, admin_id, status
+Live chat sessies
+chat_messages
+session_id, sender_type, message
+Berichten in chat
+admin_availability
+admin_id, is_online, status
+Admin online status
+escalations
+thread_id, escalation_type, status, reason
+Manual/AI triggers
+leads
+…
+Contact/demo aanvragen
+Alle tabellen gebruiken tenant_id voor multi-tenant isolatie! Alle interacties zijn gekoppeld via thread_id (één thread per klant/tenant).
+
+💡 6. Alles samen: Hoe werkt het geheel (in het kort)?
+	•	Klant stuurt mail/chat → n8n workflow vangt deze op
+	•	Alle relevante data wordt verzameld (tenant, business rules, history, cleaned body)
+	•	AI prompt wordt gebouwd (volledige context, alle regels en ladder!)
+	•	AI model bepaalt zelf antwoord, status, type, percentage, escalatie, etc.
+	•	Antwoord + alle metadata worden opgeslagen en verstuurd
+	•	Notificaties, history, escalaties, conversation context worden realtime in dashboard getoond
+	•	Alle regels/templates/filters/scenario’s kun je centraal live aanpassen via dashboard (LoveAble UI)
+	•	Elk scenario, elke regel, elke mail wordt audit-proof gelogd voor analyse en monitoring
+
+📋 7. Wat is er nog te doen / uitbreidbaar?
+	•	Onboarding flow:
+	•	Nieuwe tenants kunnen via dashboard onboarding met eigen e-mail/wachtwoord.
+	•	Business rules/scenario’s worden automatisch gekloond van master.
+	•	Duplicate flow:
+	•	Automatisch een nieuwe workflow per tenant aanmaken met juiste Gmail trigger en settings.
+	•	Email filter workflow:
+	•	Node/code in n8n toevoegen die mails filtert vóór AI/DB.
+	•	Meer scenario’s/regels/business logic toevoegen:
+	•	Denk aan VIP klanten, cross-channel (WhatsApp, FB), etc.
+	•	Testdata/demo mode:
+	•	Dashboard vullen met realistische demo data voor video’s en sales.
+
+✨ Dit systeem is volledig schaalbaar, real-time, audit-proof en klaar voor verdere automatisering, sales en uitrol naar nieuwe tenants!
+Laat het weten als je één van deze onderdelen verder uitgeschreven wilt, of als je per scenario of per node een nog diepere mapping wilt zien!
+

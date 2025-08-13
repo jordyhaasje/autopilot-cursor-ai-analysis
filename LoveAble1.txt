@@ -1,0 +1,105 @@
+Complete Overzicht: Database Koppelingen en Supabase Uitbreidingen
+📊 Database Tabellen (17 totaal)
+Core Systeem Tabellen:
+	•	tenants - Hoofdtabel voor bedrijven/organisaties
+	•	profiles - Gebruikersprofielen gekoppeld aan auth.users
+	•	system_logs - Systeemlogboeken voor audittrail
+Klantinteractie & Communicatie:
+	•	customer_interactions - Alle klantinteracties en emails
+	•	conversation_threads - Conversatiegeschiedenis per klant
+	•	notifications - Meldingen en alerts voor gebruikers
+	•	escalations - Geëscaleerde zaken en problemen
+Live Chat Systeem:
+	•	chat_sessions - Chat sessies tussen klanten en admins
+	•	chat_messages - Berichten binnen chat sessies
+	•	admin_availability - Online status van administrators
+Business Rules & Configuratie:
+	•	master_business_rules - Master sjablonen voor business rules
+	•	tenant_business_rules - Tenant-specifieke business rules
+	•	master_scenarios - Voorgedefinieerde scenario's
+	•	scenario_rules - Rules per scenario
+	•	scenario_assignments - Toewijzing scenarios aan tenants
+Filter & Lead Management:
+	•	email_filters - Email filtering regels
+	•	leads - Contact/demo aanvragen
+🔧 Custom Database Functies (9 totaal)
+Authentication & Authorization:
+	•	get_current_user_role() - Huidige gebruikersrol ophalen
+	•	get_current_user_tenant_id() - Tenant ID via email
+	•	get_user_tenant_id() - Tenant ID via user ID
+	•	handle_new_user() - Trigger functie voor nieuwe gebruikers
+Tenant Management:
+	•	approve_tenant() - Tenant goedkeuring (v1)
+	•	approve_tenant_v2() - Verbeterde tenant goedkeuring met uitgebreide logging
+	•	link_profile_to_tenant() - Profiel koppelen aan tenant
+Utility Functions:
+	•	update_updated_at_column() - Automatische timestamp updates
+	•	upsert_mbr() - Master business rules beheer
+📱 React Hooks voor Database Interactie (25+ hooks)
+Admin & User Management:
+	•	useUsers() - Alle gebruikers (admin only)
+	•	useTeamMembers() - Team leden per tenant
+	•	useUpdateUserRole() - Gebruikersrollen wijzigen
+	•	usePendingTenants() - Tenants wachtend op goedkeuring
+	•	useApproveTenant() - Tenant goedkeuring proces
+Tenant & Profile Management:
+	•	useProfile() - Gebruikersprofiel met tenant data
+	•	useTenantSettings() - Tenant configuratie
+	•	useUpdateTenantSettings() - Tenant instellingen wijzigen
+	•	useTenantBusinessRules() - Tenant-specifieke business rules
+Customer Interactions & Communications:
+	•	useCustomerInteractions() - Alle klantinteracties
+	•	useConversationThread() - Specifieke conversatie
+	•	useConversationTimeline() - Conversatie tijdlijn
+	•	useConversationThreads() - Alle conversatie threads
+	•	useRecentInteractions() - Recente interacties
+Notifications & Alerts:
+	•	useNotifications() - Basis notificaties
+	•	useEnhancedNotifications() - Uitgebreide notificaties met filters
+	•	useNotificationActions() - Notificatie acties (markeren als gelezen, etc.)
+	•	useMarkNotificationAsRead() - Notificatie als gelezen markeren
+	•	useActiveAlerts() - Actieve alerts voor dashboard
+Live Chat System:
+	•	useChatSessions() - Chat sessies
+	•	useCreateChatSession() - Nieuwe chat sessie maken
+	•	useSendMessage() - Berichten versturen
+	•	useAdminAvailability() - Admin beschikbaarheid
+Business Rules & Configuration:
+	•	useBusinessRules() - Tenant business rules
+	•	useMasterBusinessRules() - Master business rules templates
+	•	useUpdateBusinessRule() - Business rule wijzigen
+Email Filters & Leads:
+	•	useEmailFilters() - Email filter regels
+	•	useCreateEmailFilter() - Nieuwe filter maken
+	•	useUpdateEmailFilter() - Filter wijzigen
+	•	useDeleteEmailFilter() - Filter verwijderen
+	•	useLeads() - Lead management
+Dashboard Analytics:
+	•	useDashboardStats() - Dashboard statistieken en KPI's
+🔐 Row Level Security (RLS) Implementatie
+Alle tabellen hebben uitgebreide RLS policies geïmplementeerd:
+	•	Tenant-gebaseerde toegang - Gebruikers zien alleen hun eigen tenant data
+	•	Role-based permissions - Admins hebben uitgebreide rechten
+	•	Secure functions - Security definer functies om recursie te voorkomen
+🚀 Recente Uitbreidingen & Verbeteringen
+Vandaag geïmplementeerd:
+	•	Verbeterde tenant approval met approve_tenant_v2() functie
+	•	RLS policy fix voor admin tenant approval
+	•	Uitgebreide logging in approval proces
+	•	Dashboard navigatie verbetering - duidelijker user icon met "Dashboard" label
+Key Features:
+	•	Multi-tenant architectuur met volledige scheiding
+	•	Real-time chat systeem met admin availability
+	•	Comprehensive notification systeem met prioriteiten
+	•	Business rules engine met configureerbare templates
+	•	Advanced email filtering met regex ondersteuning
+	•	Lead management voor contact/demo aanvragen
+	•	Audit trail via system_logs
+📈 Totaal Overzicht:
+	•	17 database tabellen met complete relational structure
+	•	9 custom database functies voor business logic
+	•	25+ React hooks voor seamless data management
+	•	Volledige RLS implementatie voor security
+	•	Multi-tenant ready architectuur
+	•	Real-time capabilities voor chat en notifications
+

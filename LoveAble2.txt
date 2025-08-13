@@ -1,0 +1,95 @@
+🎯 Complete Database Connecties Overzicht
+📋 Aanmeld & Authenticatie Flow
+Wanneer een gebruiker zich registreert gebeurt het volgende:
+	•	auth.users (Supabase Auth) - Hier wordt de basis user account aangemaakt
+	•	profiles tabel - Automatisch gekoppeld via trigger:
+	•	user_id → Verwijst naar auth.users.id
+	•	email → Email adres van registratie
+	•	role → Standaard 'user' (kan 'admin' worden)
+	•	tenant_id → Wordt later ingevuld wanneer tenant wordt goedgekeurd
+	•	tenants tabel - Na provider selectie (Gmail/Zoho):
+	•	bedrijfsnaam → Bedrijfsnaam uit registratie
+	•	gmail_email → Email waar mee geregistreerd
+	•	gmail_password_encrypted → Base64 encoded email wachtwoord
+	•	shop_url → Website URL
+	•	ai_persona_name → Naam van AI assistent (standaard 'Eva')
+	•	sector → Bedrijfssector (standaard 'fashion')
+	•	taalvoorkeur → Taal (NL/EN)
+	•	status → 'pending_approval' (wacht op admin goedkeuring)
+	•	active → Boolean voor actieve status
+	•	retouradres → Retouradres voor klanten
+🔗 Dashboard Data Koppelingen
+Profile & Tenant Data (via useProfile() hook):
+SELECT * FROM profiles WHERE user_id = auth.uid()
+JOIN tenants ON tenants.tenant_id = profiles.tenant_id
+Dit haalt op:
+	•	Alle bedrijfsinstellingen (maximaal_extra_compensatie, dagen_instellingen)
+	•	AI configuratie (persona_name, signature_html)
+	•	Werkflow instellingen (n8n_workflow_id, api_key)
+📊 Business Rules Systeem
+master_business_rules - Template regels:
+	•	retourbeleid_fashion - Fashion Retourbeleid
+	•	onderhandeling_logica - Compensatie Onderhandeling (+15%)
+	•	dreiging_detectie - Dreiging & Escalatie
+	•	annulering_policy - Annuleringsbeleid
+	•	adreswijziging_policy - Adreswijziging
+tenant_business_rules - Tenant-specifieke regels:
+	•	Gekoppeld via tenant_id
+	•	Elke tenant kan eigen configuratie hebben
+	•	rule_config (JSON) bevat specifieke instellingen
+	•	html_template voor email responses
+💬 Chat & Klantinteractie
+chat_sessions - Live chat sessies:
+	•	tenant_id → Gekoppeld aan bedrijf
+	•	user_email → Klant email
+	•	admin_id → Welke admin helpt
+	•	status → open/closed
+chat_messages - Chat berichten:
+	•	session_id → Verwijst naar chat_sessions
+	•	sender_type → 'user' of 'admin'
+	•	message → Bericht inhoud
+conversation_threads - Klant gesprek geschiedenis:
+	•	tenant_id → Bedrijf koppeling
+	•	customer_email → Klant identificatie
+	•	escalation_level → Escalatie niveau (0-3)
+	•	customer_mood → 'neutral', 'frustrated', etc.
+	•	vip_status → VIP klant boolean
+📈 Klant Interacties & Analytics
+customer_interactions - Alle klant interacties:
+	•	tenant_id → Bedrijf koppeling
+	•	thread_id → Verwijst naar conversation_threads
+	•	customer_email → Klant identificatie
+	•	message_body → Originele klant email
+	•	ai_response → AI gegenereerde response
+	•	compensatie_percentage → Toegekende compensatie %
+	•	dreiging_detected → Boolean voor dreiging detectie
+	•	annulering_aangevraagd → Boolean voor annulering
+	•	ladder_stap → Compensatie ladder niveau
+🔔 Notificaties & Alerts
+notifications - Systeem meldingen:
+	•	tenant_id → Bedrijf koppeling
+	•	thread_id → Gekoppeld aan gesprek
+	•	type → 'escalation', 'threat', 'high_compensation'
+	•	priority → 'high', 'medium', 'low'
+	•	action_required → Boolean voor actie vereist
+⚙️ Email Filters & Instellingen
+email_filters - Email filtering:
+	•	tenant_id → Bedrijf koppeling
+	•	filter_type → 'allow', 'block', 'spam'
+	•	email_address → Specifiek email adres
+	•	domain → Domein filtering
+	•	is_regex → Boolean voor regex patronen
+📋 RLS (Row Level Security) Beveiliging
+Alle data is beveiligd per tenant:
+	•	Gebruikers zien alleen hun eigen tenant data
+	•	Admins kunnen alle data zien
+	•	Functies zoals get_user_tenant_id() zorgen voor isolatie
+	•	Chat en interacties zijn volledig gescheiden per bedrijf
+🎯 Key Database Functies
+	•	get_user_tenant_id() - Haalt tenant_id op van ingelogde user
+	•	get_current_user_role() - Controleert of user admin is
+	•	approve_tenant_v2() - Keurt tenants goed (alleen admins)
+	•	handle_new_user() - Maakt automatisch profile aan bij registratie
+	•	link_profile_to_tenant() - Koppelt profile aan tenant na goedkeuring
+Dit systeem zorgt ervoor dat elke tenant volledig geïsoleerd is, alle klantinteracties worden bijgehouden, en het dashboard real-time data toont gebaseerd op de tenant van de ingelogde gebruiker.
+

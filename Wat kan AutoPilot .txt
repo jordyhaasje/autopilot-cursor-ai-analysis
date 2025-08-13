@@ -1,0 +1,81 @@
+2. AI Context Builder & scenario mapping
+	•	Ladder-stap/percentage nooit dubbel: AI slaat geen enkele stap over en biedt nooit 2x hetzelfde percentage aan.
+	•	Refusals en history: Elk weigermoment (refusal) herkend via history en keywords — ladder wordt automatisch verhoogd.
+	•	Slimme history: Laatste 3-5 interacties per thread worden altijd meegestuurd voor context in de AI-prompt.
+	•	Klantnaamdetectie: Altijd sticky en robuust, multi-language, met fallback op From-header of emailadres.
+	•	Gespreksgeschiedenis in prompt: De AI krijgt altijd volledige, relevante context (AI- en klantberichten), scenario, percentage, dagen sinds bestelling, triggers.
+
+3. Regels & scenario’s (allemaal slim, automatisch, 100% contextueel)
+A. Retour/compensatie (de ladder)
+	•	Compensatieladder: 15%, 20%, 30%, 40% (of zoals per tenant ingesteld)
+	•	Tot max ladder (40%):
+	•	Nooit retouradres, “geld terug”, “retourneren” of gerelateerde woorden in AI-response
+	•	AI biedt telkens volgend percentage, herkent weigering/context volledig automatisch
+	•	Na weigering max ladder:
+	•	Retouradres + tekst over retourkosten voor klant, altijd in context
+	•	Onderhandeling:
+	•	AI mag +15% extra bieden bovenop huidige stap als klant daar expliciet om vraagt, maar nooit proactief
+	•	Dit wordt herkend via keyword-detectie én history-check
+	•	Dreiging/escalatie:
+	•	Direct 50% bieden bij dreiging (consumentenbond, politie, advocaat)
+	•	Weigering op 50% = direct retouradres tonen (met uitleg over retourkosten)
+	•	Volledige opvolging:
+	•	AI reageert altijd gepersonaliseerd en gevarieerd, nooit copy-paste; elke nieuwe klantmail (ook na meerdere weigeringen) wordt contextueel beantwoord
+B. Leveringsvragen
+	•	AI analyseert dagen sinds bestelling uit body + subject + history
+	•	Per dagengroep specifieke reactie:
+	•	3-6 dagen: geruststellen, uitleg normale levertijd, geen harde deadline
+	•	7-10 dagen: vraag om nog 3 werkdagen af te wachten
+	•	11-13 dagen: vraag om trackingnummer als niet in bericht, zelf uitzoeken als mogelijk
+	•	13+ dagen: direct notificatie naar dashboard (alert_type), AI zegt klant dat het nu wordt uitgezocht
+	•	Nooit trackinglink of exacte levertijd delen, altijd geruststellen
+C. Algemene vragen
+	•	Beschikbaarheid:
+	•	AI zegt: “Zolang het artikel op de webshop staat, kun je hem bestellen.”
+	•	Overige algemene vragen:
+	•	Antwoord altijd contextueel, nooit standaard copy-paste, in juiste tone-of-voice en taal
+	•	AI herkent en switcht automatisch naar retour-/compensatielogica bij klacht
+D. Klachten/algemeen
+	•	AI herkent emotie/mood (positief, neutraal, negatief) uit body
+	•	Contextuele opvolging: AI checkt altijd volledige history
+	•	Ladder start pas bij retour/compensatie-signaal, niet bij klacht zonder retourwens
+E. Annuleringen
+	•	Maximaal aantal dagen voor annulering per tenant (uit database business rules)
+	•	AI checkt days sinds bestelling (uit body/history)
+	•	Bij te laat: “Sorry, annuleren is niet meer mogelijk, omdat het buiten de termijn valt.”
+	•	Bij ontbrekende besteldatum: AI vraagt klant om besteldatum
+	•	Bij binnen termijn: “Je bestelling wordt geannuleerd, bevestiging volgt.”
+F. Adreswijzigingen
+	•	Maximaal aantal dagen voor adreswijziging per tenant (uit database)
+	•	AI zoekt zelf naar nieuwe adres in de body (en vraagt expliciet als het niet genoemd is)
+	•	Te laat? “We kunnen het adres helaas niet meer wijzigen, omdat het al bij de vervoerder is.”
+	•	Ontbrekende info? “Kun je doorgeven naar welk adres het pakket moet?”
+G. Opmaak/communicatie
+	•	Altijd professionele openingszin:
+	•	“Hoi [naam],” of “Beste [naam],” met altijd witregel erna
+	•	Geen dubbele sign-off:
+	•	“Met vriendelijke groet, Eva – [bedrijfsnaam]” altijd 1x, nooit dubbel
+	•	Reply-format altijd netjes HTML, voor e-mailclients
+	•	Persona, bedrijfsnaam en afsluiting altijd correct uit tenantdata
+H. Alerts & notificaties
+	•	alert_type wordt altijd geset bij belangrijke meldingen (bijv. 13+ dagen wachten, dreiging, escalatie)
+	•	Notificaties worden gesplitst in n8n via IF (alert_type not empty → true route = alert, false = normaal contact)
+I. Slimme fallback & edge-cases
+	•	Multi-tenant support:
+	•	System is 100% veilig voor meerdere klanten/tenants tegelijk; alle queries filteren altijd op tenant_id én customer_email
+	•	Race condition-preventie:
+	•	Optionele mini-wait na upsert voorkomt timing-issues bij snelle, herhaalde contacten
+
+4. Metadata/context voor analytics, search & AI
+	•	In customer_interactions:
+	•	metadata bevat: alle scenario-info, ladder, mood, history, days, triggers, contact_count, enz.
+	•	In conversation_threads:
+	•	conversation_context bevat: laatste gespreksgeschiedenis, scenario, triggers
+	•	Alle AI-responses en scenario’s altijd gebaseerd op complete context (AI krijgt altijd history mee!)
+
+5. Wat kan er nog meer? (Jouw toekomst!)
+	•	Analytics op metadata/context mogelijk (wie mailt vaak, welke scenario’s, welke moods, enz.)
+	•	Snelle search/filter op history per klant/tenant
+	•	Automatische AI-verbetering per type klacht/scenario (trainen op history)
+	•	Automatische trenddetectie (“veel klachten over levering/maat/retour?”)
+
