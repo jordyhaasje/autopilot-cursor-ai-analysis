@@ -1,0 +1,37 @@
+# Environment variabelen
+.env
+.env.local
+.env.production
+
+# API Keys en credentials
+*api_key*
+*secret*
+*token*
+*password*
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS bestanden
+.DS_Store
+Thumbs.db
+
+# IDE bestanden
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary bestanden
+tmp/
+temp/
+*.tmp
+
+# Database dumps
+*.sql
+*.dump
+
+# Backup bestanden
+*.bak
+*.backup
