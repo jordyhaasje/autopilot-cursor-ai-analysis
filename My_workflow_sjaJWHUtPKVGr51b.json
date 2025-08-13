@@ -1,0 +1,1202 @@
+{
+  "id": "sjaJWHUtPKVGr51b",
+  "name": "My workflow",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tenant-onboard",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        -48
+      ],
+      "id": "280ef41b-92d5-4628-9237-13b89a6cebc1",
+      "name": "Webhook",
+      "webhookId": "315faf6c-5cf1-4d8b-ac77-a7ad58044ddd",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "r4LaJHSpmAXsQySw",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tenants",
+          "mode": "list",
+          "cachedResultName": "tenants"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "active": false,
+            "gmail_email": "={{ $('Code1').item.json.gmail_email }}",
+            "gmail_password_encrypted": "={{ $('Prepare tenant data').item.json.gmail_password_encrypted }}",
+            "annulering_toegestaan_dagen": 0,
+            "adreswijziging_toegestaan_dagen": 0,
+            "bedrijfsnaam": "={{ $('Webhook').item.json.body.bedrijf }}",
+            "tenant_id": "={{ $('Code1').first().json.tenant_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "tenant_id",
+              "displayName": "tenant_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "bedrijfsnaam",
+              "displayName": "bedrijfsnaam",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sector",
+              "displayName": "sector",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "gmail_email",
+              "displayName": "gmail_email",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "gmail_password_encrypted",
+              "displayName": "gmail_password_encrypted",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_persona_name",
+              "displayName": "ai_persona_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_signature_html",
+              "displayName": "ai_signature_html",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "taalvoorkeur",
+              "displayName": "taalvoorkeur",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "retouradres",
+              "displayName": "retouradres",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "annulering_toegestaan_dagen",
+              "displayName": "annulering_toegestaan_dagen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "adreswijziging_toegestaan_dagen",
+              "displayName": "adreswijziging_toegestaan_dagen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "api_key",
+              "displayName": "api_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "active",
+              "displayName": "active",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2320,
+        -128
+      ],
+      "id": "084bc14c-f100-45cc-a466-bb733dfe7801",
+      "name": "Insert rows in a table",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "KpdXYnkZStlD3p2g",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT rule_key, rule_config, html_template\nFROM master_business_rules;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2592,
+        -112
+      ],
+      "id": "3bec976c-4293-42c1-9b0d-707fb1b9a83e",
+      "name": "Execute a SQL query",
+      "notesInFlow": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "KpdXYnkZStlD3p2g",
+          "name": "Postgres account"
+        }
+      },
+      "notes": "Get master rules"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tenant_business_rules",
+          "mode": "list",
+          "cachedResultName": "tenant_business_rules"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "tenant_id": "={{ $('Code1').item.json.tenant_id }}",
+            "rule_key": "={{ $('Execute a SQL query').item.json.rule_key }}",
+            "rule_config": "={{ $('Execute a SQL query').item.json.rule_config }}",
+            "html_template": "={{ $('Execute a SQL query').item.json.html_template }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tenant_id",
+              "displayName": "tenant_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rule_key",
+              "displayName": "rule_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rule_config",
+              "displayName": "rule_config",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "html_template",
+              "displayName": "html_template",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2912,
+        -112
+      ],
+      "id": "d3c6d5a1-0fdb-4b11-83fa-5801159cb1fa",
+      "name": "Insert rows in a table1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "KpdXYnkZStlD3p2g",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/simulate-customer-email",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        304
+      ],
+      "id": "a1591288-cd23-478d-bf35-a4cc12bb973f",
+      "name": "Webhook1",
+      "webhookId": "93a5e6b1-4914-49c9-895e-df6666c9c703",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "r4LaJHSpmAXsQySw",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tenant_business_rules",
+          "mode": "list",
+          "cachedResultName": "tenant_business_rules"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "tenant_id": "={{ $json.body.tenant_id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tenant_id",
+              "displayName": "tenant_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rule_key",
+              "displayName": "rule_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rule_config",
+              "displayName": "rule_config",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "html_template",
+              "displayName": "html_template",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        16,
+        304
+      ],
+      "id": "510d80e2-5dbe-4202-8b97-f6d7d666d768",
+      "name": "Get Rules for Tenant",
+      "alwaysOutputData": true,
+      "executeOnce": false,
+      "credentials": {
+        "postgres": {
+          "id": "KpdXYnkZStlD3p2g",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $node[\"Webhook1\"].json.body;\nconst regels = $items(\"Get Rules for Tenant\").map(i => i.json);\n\nlet prompt = `Beantwoord professioneel de volgende klantvraag:\\n\\n\"${input.message}\"\\n\\n`;\nprompt += `Gebruik de volgende bedrijfsregels:\\n`;\n\nregels.forEach(rule => {\n  prompt += `- ${rule.rule_key}: ${JSON.stringify(rule.rule_config)}\\n`;\n});\n\nprompt += `\\nAntwoord in de taal van de klant en sluit af met een vriendelijke toon.`;\n\nreturn [{ json: { ...input, prompt, regels } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        304
+      ],
+      "id": "e756493c-4d26-45a3-b48b-0051ad5520b1",
+      "name": "Generate prompt",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4",
+          "mode": "list",
+          "cachedResultName": "GPT-4"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.prompt }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        432,
+        240
+      ],
+      "id": "bcccb315-62fe-49b3-bc0f-d1890d73b47f",
+      "name": "Message a model",
+      "alwaysOutputData": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "4cc05BkVx7V6XeAC",
+          "name": "OpenAi account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const message = $json.message || '';\nconst customer_email = $json.source_email || '';\nconst tenant_id = $json.tenant_id || '';\n\n// AI response direct ophalen vanuit model node\nconst ai_response = $('Message a model').item.json.message.content || '';\n\nconst regels = $json.regels || [];\n\nlet dreiging = false;\nlet annulering = false;\nlet retour_pogingen = 0;\n\n// Dynamische regels toepassen\nregels.forEach(rule => {\n  const key = rule.rule_key;\n  const config = rule.rule_config || {};\n\n  if (key === \"dreiging_detectie\" && config.trefwoorden) {\n    config.trefwoorden.forEach(woord => {\n      if (ai_response.toLowerCase().includes(woord.toLowerCase())) {\n        dreiging = true;\n      }\n    });\n  }\n\n  if (key === \"annuleer_toegestaan\" && config.max_dagen_na_bestelling) {\n    if (ai_response.toLowerCase().includes(\"annuleren\") || ai_response.toLowerCase().includes(\"annulering\")) {\n      annulering = true;\n    }\n  }\n\n  if (key === \"retour_detectie\" && config.signalering) {\n    config.signalering.forEach(woord => {\n      if (ai_response.toLowerCase().includes(woord.toLowerCase())) {\n        retour_pogingen += 1;\n      }\n    });\n  }\n});\n\nreturn {\n  json: {\n    tenant_id,\n    customer_email,\n    message_body: message,\n    ai_response,\n    status: 'verwerkt',\n    contact_count: 1,\n    dreiging_detected: dreiging,\n    annulering_aangevraagd: annulering,\n    retour_pogingen\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        256
+      ],
+      "id": "a92a6ecf-1234-4323-bb19-17f4fb6ac2d4",
+      "name": "Code2",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "customer_interactions",
+          "mode": "list",
+          "cachedResultName": "customer_interactions"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "dreiging_detected": "={{ $json.dreiging_detected }}",
+            "annulering_aangevraagd": "={{ $json.annulering_aangevraagd }}",
+            "tenant_id": "={{ $json.tenant_id }}",
+            "contact_count": "={{ $json.contact_count }}",
+            "compensatie_percentage": 0,
+            "retour_pogingen": "={{ $json.retour_pogingen }}",
+            "customer_email": "={{ $json.customer_email }}",
+            "message_body": "={{ $json.message_body }}",
+            "ai_response": "={{ $json.ai_response }}",
+            "status": "={{ $json.status }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "tenant_id",
+              "displayName": "tenant_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "customer_email",
+              "displayName": "customer_email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "contact_count",
+              "displayName": "contact_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_body",
+              "displayName": "message_body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_response",
+              "displayName": "ai_response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "compensatie_percentage",
+              "displayName": "compensatie_percentage",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "dreiging_detected",
+              "displayName": "dreiging_detected",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "annulering_aangevraagd",
+              "displayName": "annulering_aangevraagd",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "retour_pogingen",
+              "displayName": "retour_pogingen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1200,
+        304
+      ],
+      "id": "3a73ee02-198d-4bcc-89fb-c3439bc1577f",
+      "name": "Insert rows in a table2",
+      "credentials": {
+        "postgres": {
+          "id": "KpdXYnkZStlD3p2g",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        784,
+        496
+      ],
+      "id": "b2c073ff-13b9-4ae3-8b15-760505226f15",
+      "name": "Merge1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO tenants (\n  tenant_id,\n  bedrijfsnaam,\n  sector,\n  gmail_email,\n  gmail_password_encrypted,\n  ai_persona_name,\n  ai_signature_html,\n  taalvoorkeur,\n  retouradres,\n  annulering_toegestaan_dagen,\n  adreswijziging_toegestaan_dagen,\n  active,\n  created_at\n)\nVALUES (\n  '{{ $json.tenant_id || '' }}',\n  '{{ $json.bedrijfsnaam || '' }}',\n  '{{ $json.sector || '' }}',\n  '{{ $json.gmail_email || '' }}',\n  '{{ $json.gmail_password_encrypted || '' }}',\n  '{{ $json.ai_persona_name || '' }}',\n  '{{ $json.ai_signature_html || '' }}',\n  '{{ $json.taalvoorkeur || '' }}',\n  '{{ $json.retouradres || '' }}',\n  {{ $json.annulering_toegestaan_dagen || 0 }},\n  {{ $json.adreswijziging_toegestaan_dagen || 0 }},\n  true,\n  now()\n);",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1840,
+        -128
+      ],
+      "id": "3cb68533-a686-4b99-a36e-c6dc06c4cc2c",
+      "name": "Insert Tenant",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "KpdXYnkZStlD3p2g",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO scenario_assignments (\n  scenario_id,\n  tenant_id,\n  assigned_at\n)\nVALUES (\n  '209e0a66-2e92-49d9-b69c-53e58a5f2afe',\n  '{{ $('Code1').first().json.tenant_id }}',\n  now()\n);\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2080,
+        -128
+      ],
+      "id": "95a53096-7736-468e-9232-077cb7fc82d9",
+      "name": "Insert scenario_assignment",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "KpdXYnkZStlD3p2g",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM tenants WHERE gmail_email = '{{ $json.body.gmail_email }}'",
+        "options": {
+          "queryReplacement": "="
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        576,
+        -368
+      ],
+      "id": "9dfbe24d-7bd1-4701-b9aa-c53cca16b234",
+      "name": "Check if tenant exists1",
+      "alwaysOutputData": true,
+      "retryOnFail": false,
+      "executeOnce": false,
+      "credentials": {
+        "postgres": {
+          "id": "KpdXYnkZStlD3p2g",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\n// input[0] = webhook body\n// input[1] = result van \"Check if tenant exists\" (of lege json)\nconst formData = input[0].json.body || {};\nconst existing = input[1].json?.[0] || null;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        -64
+      ],
+      "id": "3c38aefc-fda1-4678-92b9-705c62586b03",
+      "name": "Code3",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "notesInFlow": true,
+      "notes": "Encrypt wachtwoord\n"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bcebbf6d-91f5-47cf-83c2-26e92ce8b844",
+              "leftValue": "={{$json.nieuw}}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1360,
+        -224
+      ],
+      "id": "0af516de-e03d-4902-8442-82e7e6f54e46",
+      "name": "If",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tenants",
+          "mode": "list",
+          "cachedResultName": "tenants"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "active": false,
+            "tenant_id": "={{$json.tenant_id}}",
+            "annulering_toegestaan_dagen": "={{ $json.annulering_toegestaan_dagen }}",
+            "adreswijziging_toegestaan_dagen": "={{ $json.adreswijziging_toegestaan_dagen }}",
+            "bedrijfsnaam": "={{ $json.bedrijfsnaam }}",
+            "sector": "={{ $json.sector }}",
+            "gmail_email": "={{ $json.gmail_email }}",
+            "gmail_password_encrypted": "={{ $json.gmail_password_encrypted }}",
+            "ai_persona_name": "={{ $json.ai_persona_name }}",
+            "ai_signature_html": "={{ $json.ai_signature_html }}",
+            "taalvoorkeur": "={{ $json.taalvoorkeur }}",
+            "retouradres": "={{ $json.retouradres }}"
+          },
+          "matchingColumns": [
+            "gmail_email"
+          ],
+          "schema": [
+            {
+              "id": "tenant_id",
+              "displayName": "tenant_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "bedrijfsnaam",
+              "displayName": "bedrijfsnaam",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sector",
+              "displayName": "sector",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "gmail_email",
+              "displayName": "gmail_email",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "gmail_password_encrypted",
+              "displayName": "gmail_password_encrypted",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_persona_name",
+              "displayName": "ai_persona_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_signature_html",
+              "displayName": "ai_signature_html",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "taalvoorkeur",
+              "displayName": "taalvoorkeur",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "retouradres",
+              "displayName": "retouradres",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "annulering_toegestaan_dagen",
+              "displayName": "annulering_toegestaan_dagen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "adreswijziging_toegestaan_dagen",
+              "displayName": "adreswijziging_toegestaan_dagen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "api_key",
+              "displayName": "api_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "active",
+              "displayName": "active",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1440,
+        16
+      ],
+      "id": "e599b8e5-31bc-4feb-a77f-4a69e7f1bd24",
+      "name": "Update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "KpdXYnkZStlD3p2g",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\nconst formData = input[0]?.json?.body || {}; // Webhook input\nconst existingTenant = input[1]?.json?.[0] || null; // Resultaat uit Check if tenant exists\n\nfunction generateUUID() {\n  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {\n    const r = Math.random() * 16 | 0;\n    const v = c === 'x' ? r : (r & 0x3 | 0x8);\n    return v.toString(16);\n  });\n}\n\n// Gebruik bestaande tenant_id of maak een nieuwe aan\nconst tenant_id = existingTenant?.tenant_id || generateUUID();\nconst isNew = !existingTenant;\n\n// Encode wachtwoord als aanwezig\nlet encodedPassword = null;\nif (formData.gmail_password) {\n  encodedPassword = Buffer.from(formData.gmail_password).toString('base64');\n}\n\nreturn [{\n  json: {\n    ...formData,\n    gmail_password_encrypted: encodedPassword || null,\n    tenant_id,\n    nieuw: isNew,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        -368
+      ],
+      "id": "625fbe79-3cb8-4ab4-91d6-37e057398591",
+      "name": "Prepare tenant data",
+      "alwaysOutputData": true,
+      "executeOnce": false
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert rows in a table": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Get Rules for Tenant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Rules for Tenant": {
+      "main": [
+        [
+          {
+            "node": "Generate prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate prompt": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Tenant": {
+      "main": [
+        [
+          {
+            "node": "Insert scenario_assignment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert scenario_assignment": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if tenant exists1": {
+      "main": [
+        [
+          {
+            "node": "Prepare tenant data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "Check if tenant exists1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Insert Tenant",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare tenant data": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "tags": [],
+  "versionId": "d7671e05-94fd-441a-92f0-3c46927a24ce",
+  "createdAt": "2025-07-29T12:23:23.224Z",
+  "updatedAt": "2025-08-01T13:30:39.071Z"
+}
