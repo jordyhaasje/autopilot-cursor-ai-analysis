@@ -1,117 +1,56 @@
-# N8N Workflows - Railway Export
+# 🚀 AutoPilot Cursor AI Analysis
 
-Deze repository bevat alle N8N workflows die draaien op de Railway-hosted N8N instance.
+## 📋 Project Overzicht
+Dit repository bevat de complete analyse van het AutoPilot AI-klantenservice systeem, inclusief N8N workflows, Supabase database analyse, en alle documentatie.
 
-## 📋 Overzicht
+## 🎯 Wat is AutoPilot?
+AutoPilot is een geavanceerd multi-tenant AI-klantenservice systeem voor dropshipping bedrijven, specifiek ontworpen voor Chinese leveranciers waar lange levertijden normaal zijn.
 
-- **Totaal workflows:** 18
-- **Export datum:** 13 augustus 2025
-- **Railway URL:** https://primary-production-9667.up.railway.app
-- **Status:** Alle workflows zijn momenteel inactief
+## 📁 Repository Inhoud
 
-## 🎯 Belangrijke Workflows
+### 🤖 N8N Workflows
+- `CURSOR_AI_WP5aiR5vN2A9w91i.json` - Hoofdworkflow voor AI klantenservice
+- `*.json` - Alle andere N8N workflows
 
-### 1. CURSOR AI (ID: WP5aiR5vN2A9w91i)
-**Bestand:** `CURSOR_AI_WP5aiR5vN2A9w91i.json`
+### 📊 Analyse Scripts
+- `analyze-n8n-code.js` - Diepgaande code analyse van N8N nodes
+- `analyze-business-rules.js` - Business rules analyse
+- `analyze-supabase.js` - Database analyse
+- `deep-code-analysis.js` - Kritieke code blokken analyse
 
-Dit is de hoofdworkflow voor Cursor AI integratie. Deze workflow:
-- Verwerkt inkomende Gmail berichten
-- Gebruikt AI voor automatische klantenservice
-- Integreert met PostgreSQL database
-- Heeft geavanceerde response parsing
+### 📚 Documentatie
+- `FINAL_COMPLETE_ANALYSIS.md` - Complete finale analyse
+- `COMPLETE_ANALYSIS_SUMMARY.md` - Samenvatting van alle bevindingen
+- `AutoPilot_Overzicht.md` - Volledige handleiding
+- `PROJECT_SAMENVATTING.md` - Project samenvatting
 
-**Belangrijke nodes:**
-- Gmail Trigger (polling elke minuut)
-- AI Context Builder
-- Response Parser
-- PostgreSQL integratie
-- Gmail response sender
+### 🔧 Business Rules
+- 14 master business rules geanalyseerd
+- Compensatie ladder systeem
+- Chinese dropshipping optimalisatie
+- Multi-language support (NL/EN/DE)
 
-### 2. AutoPilot Workflows
-Verschillende AutoPilot workflows voor verschillende tenants:
-- **Muko - AutoPilot Workflow** (3 versies)
-- **Maduro scales - AutoPilot Workflow**
-- **Velora - AutoPilot Workflow**
-- **Hehdhd - AutoPilot Workflow**
+## 🚀 Volgende Stappen
+1. GitHub repository aanmaken: `autopilot-cursor-ai-analysis`
+2. Lokale N8N setup voor testing
+3. Email filtering implementeren
+4. Performance monitoring toevoegen
 
-### 3. Development Workflows
-- **DIT IS DE GOEDE** (2 versies)
-- **HIER WERKEN WE AAN - FLOW ANALYSE EN EVALUATIE**
-- **BACKUP juist**
+## 🔗 Links
+- **N8N Workflow**: CURSOR AI (25 nodes)
+- **Database**: Supabase met 17 tabellen
+- **Dashboard**: LoveAble React dashboard
 
-## 🔧 Technische Details
+## 📈 Status
+- ✅ N8N workflows geëxporteerd
+- ✅ Database analyse voltooid
+- ✅ Code analyse voltooid
+- ✅ Documentatie compleet
+- 🔄 GitHub repository setup
+- ⏳ Lokale testing setup
+- ⏳ Email filtering implementatie
 
-### Database Integratie
-Alle workflows gebruiken PostgreSQL met de volgende tabellen:
-- `tenants` - Tenant configuratie
-- `conversation_threads` - Gespreksgeschiedenis
-- `customer_interactions` - Klantinteracties
-- `tenant_business_rules` - Business rules per tenant
-
-### AI Integratie
-- **Model:** GPT-4O-MINI
-- **Context:** Volledige gespreksgeschiedenis
-- **Response parsing:** Geavanceerde JSON parsing
-- **Multi-language support:** Nederlands, Engels, Duits
-
-### Email Verwerking
-- **Trigger:** Gmail polling (elke minuut)
-- **Filtering:** Ongelezen berichten van specifieke senders
-- **Processing:** HTML cleaning, context building, AI response
-- **Response:** Automatische email replies
-
-## 🚀 Setup voor Cursor AI Integratie
-
-### Benodigde Environment Variabelen
-```bash
-RAILWAY_URL=https://primary-production-9667.up.railway.app
-N8N_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-CURSOR_AI_API_KEY=jouw_cursor_ai_api_key
-```
-
-### Database Credentials
-- **PostgreSQL:** Geconfigureerd via N8N credentials
-- **Gmail OAuth2:** Geconfigureerd voor email verwerking
-- **OpenAI API:** Geconfigureerd voor AI responses
-
-## 📊 Workflow Statistieken
-
-| Workflow Type | Aantal | Status |
-|---------------|--------|--------|
-| AutoPilot | 8 | Inactief |
-| Development | 4 | Inactief |
-| Cursor AI | 1 | Inactief |
-| Backup | 1 | Inactief |
-| Test | 4 | Inactief |
-
-## 🔒 Veiligheid
-
-- **API Keys:** Niet opgeslagen in workflows
-- **Credentials:** Beveiligd via N8N credential management
-- **Database:** Beveiligde PostgreSQL verbindingen
-- **Email:** OAuth2 authenticatie voor Gmail
-
-## 📝 Volgende Stappen
-
-1. **Activeren:** Workflows kunnen geactiveerd worden in N8N
-2. **Configureren:** Environment variabelen instellen
-3. **Testen:** Workflows testen met test emails
-4. **Monitoring:** Performance en error monitoring instellen
-
-## 🤝 Cursor AI Integratie
-
-Voor Cursor AI integratie zijn de volgende workflows het meest relevant:
-1. **CURSOR AI** - Hoofdworkflow
-2. **DIT IS DE GOEDE** - Laatste versie van de werkende flow
-3. **BACKUP juist** - Backup van de werkende versie
-
-Deze workflows bevatten alle benodigde logica voor:
-- Email verwerking
-- AI context building
-- Response generation
-- Database opslag
-- Email responses
-
-## 📞 Support
-
-Voor vragen over deze workflows of Cursor AI integratie, neem contact op via de N8N instance of GitHub issues.
+---
+**Repository:** `autopilot-cursor-ai-analysis`
+**Branch:** `main`
+**Last Update:** $(date)
