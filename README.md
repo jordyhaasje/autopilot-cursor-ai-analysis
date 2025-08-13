@@ -75,13 +75,44 @@ autopilot-cursor-ai-analysis/
 - **Tenant Isolation**: Per-tenant regels en limieten
 - **Escalation Rules**: Dreiging en escalatie logica
 
-## 🚀 Volgende Stappen
+## 🚀 Lokale N8N Setup
 
-1. **GitHub Push**: Repository naar GitHub pushen
-2. **Lokale N8N Setup**: Voor testing en ontwikkeling
-3. **Email Filtering**: Implementeren (momenteel alleen in database)
-4. **Performance Monitoring**: Toevoegen
-5. **A/B Testing**: Framework implementeren
+### **Quick Start**
+```bash
+# 1. Clone repository
+git clone https://github.com/jordyhaasje/autopilot-cursor-ai-analysis.git
+cd autopilot-cursor-ai-analysis
+
+# 2. Run setup script
+chmod +x setup-local-n8n.sh
+./setup-local-n8n.sh
+
+# 3. Start N8N
+n8n start
+```
+
+### **Handmatige Setup**
+1. **N8N installeren**: `npm install -g n8n`
+2. **Environment variables**: Zie `config/credentials.md`
+3. **Workflow importeren**: `workflows/complete-export/CURSOR_AI_WP5aiR5vN2A9w91i.json`
+4. **Credentials configureren**:
+   - **Postgres**: Supabase database connectie
+   - **Gmail**: OAuth2 setup
+   - **OpenAI**: API key instellen
+
+### **Credentials**
+Alle benodigde credentials staan in `config/credentials.md`:
+- ✅ **N8N API Key**: Voor Railway connectie
+- ✅ **Supabase URL & Key**: Voor database connectie
+- ⚠️ **Gmail OAuth2**: Handmatig configureren
+- ⚠️ **OpenAI API Key**: Handmatig toevoegen
+
+## 📋 Volgende Stappen
+
+1. **Lokale Testing**: N8N workflow testen
+2. **Email Filtering**: Implementeren (momenteel alleen in database)
+3. **Performance Monitoring**: Toevoegen
+4. **A/B Testing**: Framework implementeren
 
 ## 📊 Database Schema
 
