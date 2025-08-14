@@ -81,7 +81,15 @@ STAP 3: Weigering van 20%
 - Verhoog naar 30% compensatie
 - Blijf professioneel en empathisch
 
-STAP 4: Dreigingen
+STAP 4: Weigering van 30%
+- Verhoog naar 40% compensatie
+- Blijf professioneel en empathisch
+
+STAP 5: Weigering van 40%
+- Geef retouradres (geen verdere compensatie)
+- Leg procedure uit
+
+STAP 6: Dreigingen
 - Direct escaleren naar menselijke medewerker
 - Maximaal 50% compensatie aanbieden
 - Professioneel blijven
@@ -91,6 +99,8 @@ REGELS:
 - Altijd de volgende stap aanbieden
 - Geen contradictorische statements
 - Empathisch maar niet over-reactief
+- NOOIT "geld terug" of "terugsturen" zeggen bij 15%, 20%, 30%
+- Retouradres alleen bij 40% weigering of dreiging
 ```
 
 ### **🔍 Context Analyse & Intelligentie**
@@ -119,9 +129,14 @@ De AI moet slim genoeg zijn om te begrijpen:
    - "Mijn bestelling is nog niet binnen"
    - "Het duurt wel erg lang"
    → Proactief helpen, status opzoeken
+
+5. CATEGORIE BEWUSTZIJN
+   - Weigering detectie alleen bij lopend gesprek inzelfde categorie
+   - "Nee" in ander onderwerp → niet behandelen als weigering
+   - Context guards: lopend bod of expliciete woorden
 ```
 
-### **📊 Levering & Tracking Regels**
+### **📊 Levering & Tracking Regels (REFERENTIE - Niet Leidend)**
 ```
 De AI moet automatisch levering vragen beantwoorden:
 
@@ -133,16 +148,17 @@ LEVERTIJD VRAGEN:
 - "Waar is mijn pakket?"
   → Tracking link delen, status uitleggen
 
-LEVERTIJD REACTIES:
-- < 3 dagen: "Uw bestelling is onderweg"
-- 3-7 dagen: "Normale levertijd, tracking beschikbaar"
-- > 7 dagen: "Langer dan verwacht, laten we kijken"
+LEVERTIJD REACTIES (REFERENTIE):
+- < 7 dagen: "Normale levertijd, tracking beschikbaar"
+- 7-9 dagen: "Bijna geleverd, nog even geduld"
+- > 9 dagen: "Langer dan verwacht, laten we kijken"
 - > 14 dagen: "Te lang, compensatie aanbieden"
 
 TRACKING:
 - Altijd tracking link delen
 - Status uitleggen in begrijpelijke taal
 - Proactief helpen bij problemen
+- Nooit claimen dat je live tracking hebt
 ```
 
 ### **🔄 Annulering & Adreswijziging Regels**
@@ -192,7 +208,7 @@ VOEDING:
 De AI moet meertalig zijn en consistent reageren:
 
 TAAL DETECTIE:
-- Automatisch taal detecteren uit email
+- Automatisch taal detecteren uit klantzin
 - Consistent in dezelfde taal antwoorden
 - Juiste toon per taal/cultuur
 
@@ -233,6 +249,12 @@ PERSONALISATIE:
 - Voorkennis gebruiken
 - Persoonlijke touch toevoegen
 - Loyaliteit belonen
+
+CONTACT MOMENTEN:
+- Eerste contact vs vervolgcontact
+- Openingszin aanpassen op basis van contactmoment
+- Nooit expliciet vermelden "dit is contact X"
+- Indirect refereren ("Bedankt voor je snelle reactie")
 ```
 
 ### **⚡ Escalation & Threat Detection**
@@ -285,6 +307,42 @@ HTML TEMPLATES:
 - Multi-language support
 ```
 
+### **🔧 Belangrijke AI Regels (Uit Oude Bestanden - Referentie)**
+
+#### **Compensation-First Approach**
+```
+- Geen retour/geld-terug tot de laatste ladderstap (of dreiging)
+- Product mag gehouden worden bij compensatie
+- Retouradres alleen bij 40% weigering of dreiging
+- Onderhandeling mogelijk tot +15% als klant expliciet vraagt
+```
+
+#### **Slimme Categoriedetectie**
+```
+- Weigering detectie alleen bij lopend gesprek inzelfde categorie
+- "Nee" in ander onderwerp → niet behandelen als weigering
+- Context guards: lopend bod of expliciete woorden
+- Type guard: als er al een bod liep en model zegt "general" → coercion naar "negotiation"/"return"
+```
+
+#### **Variatie in Antwoorden**
+```
+- Openingszin, woordkeuze en zinsstructuur variëren
+- Aanhef zonder contactmoment-vermelding
+- Indirect refereren ("Bedankt voor je snelle reactie")
+- Concrete info uit het bericht gebruiken ("het jasje", "de kleur")
+- Nooit saai/statisch of zakelijk afstandelijk
+```
+
+#### **Persoonlijkheid & Toon**
+```
+- Altijd empathisch, vriendelijk, energiek, enthousiast
+- Formuleer elke reactie menselijk, hartelijk, enthousiast en persoonlijk
+- Varieer in zinnen en toon
+- Voeg gerust een korte extra vraag toe
+- Nooit zakelijk afstandelijk of saai
+```
+
 ## 🔑 **WERKENDE API KEYS & CONFIGURATIE**
 
 ### **✅ N8N Configuration (Railway Self-Hosted)**
@@ -329,7 +387,7 @@ Business Rules: 7 rules geconfigureerd
 - ✅ **Gmail Trigger** functioneert correct
 - ✅ **Email Parser** werkt perfect
 - ✅ **Email Body Cleaner** functioneert
-- ✅ **Compensatie ladder** geïmplementeerd (15% → 20% → 30% → 50%)
+- ✅ **Compensatie ladder** geïmplementeerd (15% → 20% → 30% → 40% → 50%)
 - ✅ **Postgres Store Interaction** gefixt (updated_at column toegevoegd)
 - ✅ **Email Filter** gebruikt service role key
 - ✅ **Compensatie logic** gefixed (prompt en normalizer aangepast)
@@ -381,10 +439,12 @@ Business Rules: 7 rules geconfigureerd
 ## 🔍 **RESEARCH & ANALYSE VOLTOOID**
 
 ### **📚 Originele Documentatie Geanalyseerd**
-- ✅ **`/Users/jordy/Desktop/Belangrijk/LoveAble1.txt`**: Database structuur en hooks
-- ✅ **`/Users/jordy/Desktop/Belangrijk/LoveAble2.txt`**: Multi-tenant flow en koppelingen
-- ✅ **`/Users/jordy/Desktop/Belangrijk/Logica database van flow.txt`**: N8N flow logica
-- ✅ **`/Users/jordy/Desktop/Belangrijk/database autopilot.sql`**: Originele database schema
+- ✅ **`/Users/jordy/Desktop/Belangrijk/`**: Database structuur en hooks
+- ✅ **`/Users/jordy/Desktop/AutoPilot/`**: Oude prompts en regels (REFERENTIE)
+- ✅ **Business rules analyse** voltooid
+- ✅ **AI intelligentie analyse** voltooid
+- ✅ **Multi-tenant architectuur** geanalyseerd
+- ✅ **LoveAble dashboard** geanalyseerd
 
 ### **🔍 Vergelijking Origineel vs Huidig**
 - ✅ **Originele architectuur** gedocumenteerd
@@ -497,12 +557,16 @@ Business Rules: 7 rules geconfigureerd
 - **`verify-tenant-isolation-fixed.js`**: Tenant isolation verificatie
 - **`check-loveable-dashboard.js`**: LoveAble dashboard status check
 
-### **📚 Originele Documentatie**
+### **📚 Originele Documentatie (REFERENTIE - Niet Leidend)**
 - **`/Users/jordy/Desktop/Belangrijk/`**: Originele documentatie
   - `LoveAble1.txt`: Database structuur en hooks
   - `LoveAble2.txt`: Multi-tenant flow en koppelingen
   - `Logica database van flow.txt`: N8N flow logica
   - `database autopilot.sql`: Originele database schema
+- **`/Users/jordy/Desktop/AutoPilot/`**: Oude prompts en regels (REFERENTIE)
+  - `PROMPTS.txt`: Oude AI prompts (REFERENTIE)
+  - `AutoPilot_Overzicht.md`: Oude architectuur (REFERENTIE)
+  - `verder ben ik benieuwd.txt`: Oude regels (REFERENTIE)
 
 ## 🔧 **Development Commands**
 
@@ -539,6 +603,12 @@ node check-loveable-dashboard.js
 1. **AI Intelligentie** (smart detection, context awareness)
 2. **Multi-Tenant Isolation** (tenant detection, business rules)
 3. **LoveAble Dashboard** (workflow duplicatie, admin approval)
+
+### **📝 Belangrijke Notities**
+- **Oude bestanden zijn REFERENTIE, niet leidend**
+- **Huidige implementatie is de basis**
+- **Focus op smart detection en context awareness**
+- **Compensation-first approach: geen retour tot laatste ladderstap**
 
 ## 🎯 **Conclusie**
 
