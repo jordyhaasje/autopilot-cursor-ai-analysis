@@ -1,148 +1,146 @@
-# 🚀 AutoPilot Cursor AI Analysis
+# 🚀 AutoPilot - Multi-Tenant AI Customer Service System
 
 ## 📋 Project Overzicht
-Dit repository bevat de complete analyse van het AutoPilot AI-klantenservice systeem, inclusief N8N workflows, Supabase database analyse, en alle documentatie.
 
-## 🎯 Wat is AutoPilot?
-AutoPilot is een geavanceerd multi-tenant AI-klantenservice systeem voor dropshipping bedrijven, specifiek ontworpen voor Chinese leveranciers waar lange levertijden normaal zijn.
+AutoPilot is een geavanceerd multi-tenant AI klantenservice systeem dat automatisch emails verwerkt en beantwoordt. Elke tenant (klant) krijgt zijn eigen geïsoleerde flow met configuratie, business rules en AI persona.
 
-## 📁 Repository Structuur
+## 🏗️ Architectuur
 
-```
-autopilot-cursor-ai-analysis/
-├── 📁 workflows/
-│   ├── 🎯 main/
-│   │   └── CURSOR_AI_WP5aiR5vN2A9w91i.json     # Hoofdworkflow voor Cursor AI
-│   ├── 🧪 development/
-│   │   ├── DIT_IS_DE_GOEDE_*.json              # Development workflows
-│   │   ├── HIER_WERKEN_WE_AAN_*.json           # Work-in-progress
-│   │   └── My_workflow_*.json                  # Test workflows
-│   ├── 🏢 tenants/
-│   │   ├── Muko___AutoPilot_Workflow_*.json    # Tenant-specifieke workflows
-│   │   ├── Maduro_scales___AutoPilot_*.json
-│   │   ├── Velora___AutoPilot_Workflow_*.json
-│   │   └── Hehdhd___AutoPilot_Workflow_*.json
-│   └── 💾 backups/
-│       └── BACKUP_*.json                       # Backup workflows
-├── 📁 analysis/
-│   ├── 📊 scripts/
-│   │   ├── analyze-n8n-code.js                 # N8N code analyse
-│   │   ├── analyze-business-rules.js           # Business rules analyse
-│   │   ├── analyze-supabase.js                 # Database analyse
-│   │   └── deep-code-analysis.js               # Diepgaande code analyse
-│   └── 📋 reports/
-│       ├── FINAL_COMPLETE_ANALYSIS.md          # Complete analyse
-│       ├── COMPLETE_ANALYSIS_SUMMARY.md        # Samenvatting
-│       └── EXPORT_SUMMARY.md                   # Export overzicht
-├── 📁 documentation/
-│   ├── 📖 guides/
-│   │   ├── AutoPilot_Overzicht.md              # Project overzicht
-│   │   ├── PROJECT_SAMENVATTING.md             # Project samenvatting
-│   │   └── autopilot-documentation.md          # AutoPilot documentatie
-│   ├── 📝 original/
-│   │   ├── AutoPilot hoe werkt het N8N.docx    # Originele documentatie
-│   │   ├── cursor_n8n_project_for_ai_customer_serv.md
-│   │   ├── extra markdown.md
-│   │   ├── Wat kan AutoPilot .txt
-│   │   ├── introductie AutoPilot.txt
-│   │   └── ikwildit.txt
-│   └── 🎨 dashboard/
-│       ├── LoveAble1.txt                       # Dashboard documentatie
-│       └── LoveAble2.txt
-├── 📁 config/
-│   ├── index.json                              # Workflow index
-│   └── .gitignore                              # Git configuratie
-├── 🤖 AI_CAPABILITIES_COMPLETE.md              # Complete AI capabilities
-└── 📄 README.md                                # Deze file
+### **Multi-Tenant Systeem**
+- **Tenant = Gebruiker**: Elke gebruiker krijgt een eigen tenant met unieke `tenant_id`
+- **LoveAble Dashboard**: Frontend waar tenants hun configuratie beheren
+- **N8N Workflows**: Automatische email verwerking per tenant
+- **Supabase Database**: Multi-tenant data opslag met Row Level Security (RLS)
+
+### **Flow Proces**
+1. **Registratie**: Gebruiker meldt aan via LoveAble dashboard
+2. **Goedkeuring**: Admin keurt gebruiker goed → krijgt `tenant_id`
+3. **Flow Duplicatie**: N8N workflow wordt gedupliceerd voor nieuwe tenant
+4. **Configuratie**: Tenant configureert business rules, AI persona, email filters
+5. **Live Processing**: Systeem verwerkt automatisch emails voor deze tenant
+
+## 🔑 API Keys & Configuratie
+
+### **Supabase Database**
+```javascript
+SUPABASE_URL = 'https://cgrlfbolenwynpbvfeku.supabase.co'
+SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNncmxmYm9sZW53eW5wYnZmZWt1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM3ODk0MDgsImV4cCI6MjA2OTM2NTQwOH0.0QKyqBtoHxnn04T3hA0mv5lEbZSKfauysqrNGhMeACY'
+SUPABASE_SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNncmxmYm9sZW53eW5wYnZmZWt1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1Mzc4OTQwOCwiZXhwIjoyMDY5MzY1NDA4fQ.0QKyqBtoHxnn04T3hA0mv5lEbZSKfauysqrNGhMeACY'
 ```
 
-## 🎯 Kern Features
-
-### **AI Capabilities:**
-- **Compensatie Ladder**: Deterministische 15% → 20% → 30% → 40% → 50% (dreiging)
-- **Chinese Dropshipping**: Optimalisatie voor lange levertijden
-- **Dreiging Detectie**: Juridische dreigingen herkennen en escaleren
-- **Emotieherkenning**: Happy/neutral/frustrated/angry detectie
-- **Meertalig**: NL/EN/DE ondersteuning
-- **Context-aware**: Volledige gespreksgeschiedenis
-- **Soft Refusal**: Impliciete weigering detectie
-- **Fashion-specifiek**: Maat- en kleurproblemen
-
-### **Business Rules:**
-- **14 Business Rules**: Per-tenant configuratie
-- **Delivery Buckets**: Tijdsgebonden responses
-- **Policy Windows**: Annulering/adreswijziging termijnen
-- **Tenant Isolation**: Per-tenant regels en limieten
-- **Escalation Rules**: Dreiging en escalatie logica
-
-## 🚀 Lokale N8N Setup
-
-### **Quick Start**
-```bash
-# 1. Clone repository
-git clone https://github.com/jordyhaasje/autopilot-cursor-ai-analysis.git
-cd autopilot-cursor-ai-analysis
-
-# 2. Run setup script
-chmod +x setup-local-n8n.sh
-./setup-local-n8n.sh
-
-# 3. Start N8N
-n8n start
+### **N8N Workflow**
+```javascript
+N8N_URL = 'https://primary-production-9667.up.railway.app'
+N8N_API_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJlZGY0YzllZC00ZDE1LTQxODUtOGU1Ny1hN2NlNTIwNjBlNGMiLCJpc3MiOiJuOG4iLCJhdWQiOiJwdWJsaWMtYXBpIiwiaWF0IjoxNzU1MTY2NTY2LCJleHAiOjE3NTc3MzYwMDB9.awhRu46eFbhMPFAiv7hgFTtxLTIwpxFF7ebmXMkFPiM'
+WORKFLOW_ID = 'WP5aiR5vN2A9w91i' // CURSOR AI workflow
 ```
 
-### **Handmatige Setup**
-1. **N8N installeren**: `npm install -g n8n`
-2. **Environment variables**: Zie `config/credentials.md`
-3. **Workflow importeren**: `workflows/complete-export/CURSOR_AI_WP5aiR5vN2A9w91i.json`
-4. **Credentials configureren**:
-   - **Postgres**: Supabase database connectie
-   - **Gmail**: OAuth2 setup
-   - **OpenAI**: API key instellen
+## 📊 Database Structuur
 
-### **Credentials**
-Alle benodigde credentials staan in `config/credentials.md`:
-- ✅ **N8N API Key**: Voor Railway connectie
-- ✅ **Supabase URL & Key**: Voor database connectie
-- ⚠️ **Gmail OAuth2**: Handmatig configureren
-- ⚠️ **OpenAI API Key**: Handmatig toevoegen
+### **Hoofdtabellen**
+- **`tenants`**: Tenant configuratie (tenant_id, bedrijfsnaam, gmail_email, ai_persona)
+- **`customer_interactions`**: Alle email interacties per tenant
+- **`tenant_business_rules`**: Business rules per tenant (compensatie, detectie woorden)
+- **`email_filters`**: Email filtering per tenant (spam, blacklist, whitelist)
+- **`conversation_threads`**: Email threads per klant
+- **`notifications`**: Systeem notificaties
+- **`escalations`**: Escalaties bij dreigingen
 
-## 📋 Volgende Stappen
+### **Row Level Security (RLS)**
+- Elke tenant ziet alleen zijn eigen data
+- Service role key bypassed RLS voor N8N workflows
+- Anon key onderhevig aan RLS voor dashboard
 
-1. **Lokale Testing**: N8N workflow testen
-2. **Email Filtering**: Implementeren (momenteel alleen in database)
-3. **Performance Monitoring**: Toevoegen
-4. **A/B Testing**: Framework implementeren
+## 🤖 AI Capabilities
 
-## 📊 Database Schema
+### **Automatische Detectie**
+- **Compensatie Ladder**: Automatische verhoging bij weigeringen
+- **Dreiging Detectie**: Herkenning van juridische/agressieve taal
+- **Mood Analysis**: Emotie herkenning voor gepaste responses
+- **Scenario Matching**: Retour, annulering, adreswijziging, levering
+- **Multi-language**: NL/EN/DE ondersteuning
 
-### **Supabase Tables:**
-- `tenants`: Tenant configuratie en instellingen
-- `master_business_rules`: Centrale business rules
-- `tenant_business_rules`: Per-tenant overrides
-- `conversation_threads`: Gespreksgeschiedenis
-- `customer_interactions`: Klantinteracties
-- `email_filters`: Email filtering regels (nog niet geïmplementeerd)
+### **Business Rules**
+- **Detectie Woorden**: Automatische trigger van regels
+- **HTML Templates**: Voorgedefinieerde responses
+- **Compensatie Percentages**: Configuratie per scenario
+- **Escalatie Regels**: Automatische escalatie bij dreigingen
 
-## 🔧 Technische Details
+## 🔧 Huidige Status
 
-### **N8N Workflow:**
-- **Gmail Trigger**: Email ontvangst
-- **Postgres Nodes**: Database interacties
-- **Code Nodes**: AI logica en context building
-- **OpenAI**: GPT-4O-MINI voor responses
-- **Gmail Send**: Email verzending
+### **✅ Wat Werkt**
+- Database connectie volledig functioneel
+- Email filters werkend (4 records beschikbaar)
+- N8N workflow actief (26 nodes)
+- Multi-tenant isolatie werkend
+- Business rules systeem operationeel
 
-### **AI Intelligence:**
-- **Context Builder**: Volledige context voorbereiding
-- **Prompt Generator**: Dynamische prompt generatie
-- **Response Parser**: AI response verwerking
-- **Offer Normalizer**: Deterministische controle
+### **⚠️ Bekende Issues**
+1. **Missing `updated_at` kolom** in `customer_interactions` tabel
+2. **Email Filter node** gebruikt nog oude Supabase key
+3. **Database schema** moet bijgewerkt worden
 
-## 📞 Contact
+### **🔧 Benodigde Fixes**
+```sql
+-- Voer dit uit in Supabase SQL Editor
+ALTER TABLE customer_interactions 
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW();
 
-Voor vragen over dit project, neem contact op via GitHub issues.
+UPDATE customer_interactions 
+SET updated_at = created_at 
+WHERE updated_at IS NULL;
+```
+
+## 📁 Project Structuur
+
+### **Belangrijke Bestanden**
+- **`/Users/jordy/Desktop/Belangrijk/`**: Originele database structuur en logica
+- **`/Users/jordy/Desktop/Vandaag cursor/`**: Huidige werkbestanden
+- **`/Users/jordy/Desktop/Oude data/`**: Historische data en vergelijkingen
+
+### **Repository Bestanden**
+- **`fix-database-correct.sql`**: Database fix script
+- **`check-n8n-workflow-issues.js`**: Workflow analyse script
+- **`test-complete-system.js`**: Complete systeem test
+- **`workflow-current.json`**: Huidige N8N workflow export
+
+## 🚀 Volgende Stappen
+
+### **Voor AI Agent**
+1. **Database Fix**: Voer `fix-database-correct.sql` uit in Supabase
+2. **Workflow Test**: Test N8N workflow na database update
+3. **Email Filter Fix**: Update Email Filter node met service role key
+4. **Dashboard Test**: Verificatie LoveAble dashboard functionaliteit
+
+### **Voor Ontwikkeling**
+1. **Flow Duplicatie**: Automatische workflow duplicatie voor nieuwe tenants
+2. **Dashboard Integratie**: LoveAble dashboard met tenant management
+3. **Monitoring**: Real-time monitoring van alle tenant flows
+4. **Scaling**: Ondersteuning voor honderden tenants
+
+## 📚 Documentatie
+
+### **Originele Documentatie**
+- **`Logica database van flow.txt`**: Complete flow logica
+- **`database autopilot.sql`**: Originele database structuur
+- **`LoveAble1.txt` & `LoveAble2.txt`**: Dashboard specificaties
+
+### **Huidige Status**
+- **Repository**: https://github.com/jordyhaasje/autopilot-cursor-ai-analysis
+- **N8N Workflow**: https://primary-production-9667.up.railway.app/workflow/WP5aiR5vN2A9w91i
+- **Supabase Dashboard**: https://cgrlfbolenwynpbvfeku.supabase.co
+
+## 🎯 Project Doel
+
+AutoPilot moet een volledig geautomatiseerd multi-tenant AI klantenservice systeem worden waar:
+- Elke tenant zijn eigen geïsoleerde flow heeft
+- Gebruikers zich aanmelden via LoveAble dashboard
+- Admin gebruikers goedkeurt en automatisch flow dupliceert
+- AI automatisch emails verwerkt volgens tenant-specifieke regels
+- Dashboard real-time inzicht geeft in alle interacties
 
 ---
 
-**Status**: ✅ Repository georganiseerd en klaar voor GitHub push
+**Laatste Update**: 14 Augustus 2025  
+**Status**: Database fix nodig, workflow operationeel  
+**Volgende AI**: Kan direct beginnen met database fix en workflow optimalisatie
