@@ -1,125 +1,98 @@
-# 📋 UPDATE SAMENVATTING - AutoPilot Project
+# 🔧 Email Filter Fixes & Database Analysis - Update Summary
 
-## 🎯 SAMENVATTING VAN ALLE WIJZIGINGEN (13 AUGUSTUS 2025)
+## 📅 Update Datum: 2025-01-XX
 
-### **OVERZICHT**
-Dit document bevat een complete samenvatting van alle wijzigingen die zijn gemaakt aan het AutoPilot project tijdens onze uitgebreide sessie.
+## 🎯 Wat is er toegevoegd:
 
-## 🔧 DATABASE WIJZIGINGEN
+### **📊 Database Analysis Scripts:**
+- `complete-analysis-and-fixes.js` - Complete analyse van alle problemen en voorgestelde fixes
+- `test-supabase-service-role.js` - Test script voor Supabase service role key connectie
+- `fix-database-direct.js` - Directe database fix poging via API
 
-### **1. Foreign Key Constraint Fix**
-- **Probleem:** Ontbrekende foreign key tussen `tenant_business_rules` en `master_business_rules`
-- **Oplossing:** Foreign key constraint toegevoegd
-- **Impact:** Data integriteit gewaarborgd
+### **🔧 Email Filter Fix Scripts:**
+- `fix-email-filter-patch.js` - PATCH poging voor N8N workflow update
+- `fix-email-filter-post.js` - POST poging voor N8N workflow update
+- `update-n8n-correct-key.js` - Update met juiste N8N API key
+- `update-n8n-email-filter-fix.js` - Email filter node fix poging
+- `update-n8n-email-filter-realtime.js` - Real-time update poging
+- `update-n8n-final.js` - Finale update poging
+- `update-n8n-simple.js` - Eenvoudige update poging
+- `update-workflow-final.js` - Workflow finale update
+- `update-workflow-manual.js` - Handmatige workflow update
 
-### **2. get_user_tenant_id() Functie**
-- **Probleem:** Ontbrekende functie die frontend nodig had
-- **Oplossing:** Functie aangemaakt voor tenant detection
-- **Impact:** Dashboard email filters werkend
+### **📋 Workflow Files:**
+- `workflow-current.json` - Huidige workflow export
+- `workflow-updated.json` - Geüpdatete workflow export
 
-### **3. RLS Policies Email Filters**
-- **Probleem:** Te restrictieve policies blokkeerden dashboard
-- **Oplossing:** Eenvoudige policy voor geauthenticeerde gebruikers
-- **Impact:** Email filters kunnen worden opgeslagen
+### **🔄 Updated Files:**
+- `check-database.js` - Bijgewerkt om service role key te gebruiken
+- `check-tenant-structure.js` - Bijgewerkt om service role key te gebruiken
 
-### **4. Customer Interactions Verbetering**
-- **Probleem:** Duplicate records en onjuiste updates
-- **Oplossing:** Verbeterde ON CONFLICT logic
-- **Impact:** Betere data integriteit
+## 🎯 Problemen Geïdentificeerd:
 
-## 🔧 N8N WORKFLOW WIJZIGINGEN
+### **1. Database RLS Policies:**
+- Email filters tabel heeft te restrictieve RLS policies
+- Dashboard kan geen email filters opslaan
+- N8N kan geen email filters lezen met anon key
 
-### **1. Email Filter Node Toegevoegd**
-- **Positie:** Na Gmail Trigger, voor Email Parser
-- **Functionaliteit:** Multi-tenant email filtering
-- **Features:** Spam detection, domain blocking, tenant-specific filters
-- **Impact:** Emails worden gefilterd per tenant
+### **2. N8N Email Filter Node:**
+- Gebruikt nog steeds oude anon key in plaats van service role key
+- Kan geen email filters uit database lezen
+- Multi-tenant filtering werkt niet correct
 
-### **2. AI Context Builder Fix**
-- **Probleem:** Typfout `dreigin` → `dreiging`
-- **Oplossing:** Typfout gecorrigeerd
-- **Impact:** Dreiging detectie werkt correct
+## 🔧 Voorgestelde Oplossingen:
 
-### **3. Customer Interactions Verbetering**
-- **Probleem:** Onjuiste ON CONFLICT logic
-- **Oplossing:** Verbeterde update logic
-- **Impact:** Geen duplicate records meer
+### **1. Database Fixes (SQL uitvoeren in Supabase Dashboard):**
+```sql
+-- FIX EMAIL FILTERS RLS POLICIES
+DROP POLICY IF EXISTS "Users can read email filters for their tenant" ON email_filters;
+DROP POLICY IF EXISTS "Users can insert email filters for their tenant" ON email_filters;
+DROP POLICY IF EXISTS "Users can update email filters for their tenant" ON email_filters;
+DROP POLICY IF EXISTS "Users can delete email filters for their tenant" ON email_filters;
+DROP POLICY IF EXISTS "N8N can read all email filters" ON email_filters;
+DROP POLICY IF EXISTS "Allow all authenticated users" ON email_filters;
 
-## 📊 HUIDIGE STATUS
+CREATE POLICY "Allow all authenticated users" ON email_filters
+FOR ALL USING (auth.role() = 'authenticated');
 
-### **✅ WERKEND:**
-- Database schema en constraints
-- Email filtering (per tenant)
-- AI Context Builder (typfout gefixt)
-- Customer Interactions (verbeterde logic)
-- Dashboard email filter management
-- Multi-tenant isolatie
-- N8N workflow (26 nodes)
+ALTER TABLE email_filters ENABLE ROW LEVEL SECURITY;
+```
 
-### **🧪 GETEST:**
-- Email van `lvbendjong@gmail.com` naar `jordyhaass@gmail.com` → **GEBLOKKEERD** (spam filter)
-- Email van andere adressen naar `jordyhaass@gmail.com` → **TOEGESTAAN** (normale verwerking)
-- Database queries via Supabase dashboard
-- N8N workflow via Railway dashboard
+### **2. N8N Email Filter Node (Handmatig updaten):**
+1. Ga naar: https://primary-production-9667.up.railway.app/workflow/WP5aiR5vN2A9w91i
+2. Open Email Filter node
+3. Vervang `SUPABASE_KEY` met `SUPABASE_SERVICE_ROLE_KEY`
+4. Update alle verwijzingen naar de nieuwe key
 
-## 📁 BELANGRIJKE BESTANDEN
+## 📊 Status:
 
-### **Scripts:**
-- `export-complete-workflows.js` - Volledige workflow export
-- `add-email-filter.js` - Email Filter node toevoegen
-- `fix-email-filter.js` - Email Filter dynamisch maken
-- `update-tenant-aware-email-filter.js` - Multi-tenant support
-- `final-update.js` - AI Context Builder fix
-- `update-customer-interactions.js` - Customer Interactions fix
+### **✅ Wat Werkt:**
+- Database connectie met service role key
+- Email filters tabel heeft 2 records
+- Alle tabellen toegankelijk
+- Email filter logica werkt correct
+- Juiste N8N API key gevonden
 
-### **SQL Fixes:**
-- `database-fix.sql` - Foreign key constraint
-- `fix-get-user-tenant-id.sql` - Ontbrekende functie
-- `complete-rls-fix.sql` - RLS policies
-- `customer-interactions-fix.sql` - ON CONFLICT logic
+### **❌ Wat Nog Niet Werkt:**
+- Database RLS policies blokkeren inserts
+- N8N Email Filter node gebruikt oude key
+- Dashboard kan geen email filters opslaan
 
-### **Documentatie:**
-- `AI_CAPABILITIES_COMPLETE.md` - Complete AI capabilities
-- `COMPLETE_WORKFLOW_ANALYSIS.md` - Workflow analyse
-- `FINAL_SUMMARY.md` - Project samenvatting
+## 🚀 Volgende Stappen:
 
-## 🎯 VOLGENDE STAPPEN
+1. **Voer SQL uit** in Supabase Dashboard
+2. **Update Email Filter node** handmatig in N8N
+3. **Test dashboard** email filter creatie
+4. **Test complete workflow**
 
-### **Korte termijn:**
-1. Performance monitoring toevoegen
-2. A/B testing framework implementeren
-3. Real-time notifications
-4. Advanced analytics dashboard
-
-### **Lange termijn:**
-1. Machine learning optimization
-2. Predictive analytics
-3. Advanced AI capabilities
-4. Multi-language expansion
-
-## 🔑 BELANGRIJKE LESSEN
-
-### **Database:**
-- RLS policies kunnen frontend functionaliteit blokkeren
-- Ontbrekende functies veroorzaken onduidelijke errors
-- Foreign key constraints zijn cruciaal voor data integriteit
-
-### **N8N:**
-- Workflow exports kunnen onvolledig zijn
-- Node volgorde is kritiek
-- Case-sensitive node namen gebruiken
-
-### **Multi-Tenant:**
-- Tenant isolatie is cruciaal
-- Per-tenant configuratie vereist zorgvuldige implementatie
-- Email filtering moet per tenant werken
-
-## 📞 CONTACT
-
-Voor vragen over dit project, raadpleeg de documentatie of neem contact op via GitHub issues.
+## 📁 Repository Status:
+- ✅ Alle oude bestanden behouden
+- ✅ Nieuwe scripts toegevoegd
+- ✅ Repository geüpdatet op GitHub
+- ✅ Klaar voor implementatie
 
 ---
 
-**Laatste update:** 13 Augustus 2025  
-**Status:** ✅ Alle wijzigingen succesvol geïmplementeerd  
-**Impact:** Volledig werkend multi-tenant AI klantenservice systeem
+**Repository:** https://github.com/jordyhaasje/autopilot-cursor-ai-analysis
+**Workflow ID:** WP5aiR5vN2A9w91i
+**Status:** 🔧 Ready for fixes implementation
