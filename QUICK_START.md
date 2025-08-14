@@ -21,28 +21,52 @@ WORKFLOW_ID = 'WP5aiR5vN2A9w91i'
 - ✅ **Email Filter**: Service role key geïmplementeerd
 - ✅ **N8N Workflow**: Actief en werkend
 
+## 🚨 **CRITIEK: Multi-Tenant Probleem Geïdentificeerd**
+
+### **❌ Get Tenant Data Node Ontbreekt**
+- **Probleem**: Workflow kan tenant niet dynamisch bepalen
+- **Impact**: Alle tenants gebruiken mogelijk dezelfde configuratie
+- **Oplossing**: Get Tenant Data node toevoegen
+
+### **❓ AI Context Builder Issues**
+- **Probleem**: Laadt mogelijk alle business rules voor alle tenants
+- **Impact**: AI krijgt verkeerde context voor specifieke tenant
+- **Oplossing**: Tenant-specifieke business rules loading
+
 ## 🧪 Test het Systeem
 1. **Database test**: `node test-complete-system.js`
-2. **Compensatie test**: Stuur email met "Nee dankje is te weinig"
-3. **Workflow test**: Controleer N8N workflow status
+2. **Tenant isolation test**: `node verify-tenant-isolation-fixed.js`
+3. **Compensatie test**: Stuur email met "Nee dankje is te weinig"
+4. **Multi-tenant test**: Stuur emails naar verschillende tenant addresses
 
 ## 📁 Belangrijke Bestanden
 - **`PROJECT_STATUS.md`**: Complete project overzicht
+- **`ORIGINAL_ARCHITECTURE_ANALYSIS.md`**: Originele architectuur analyse
 - **`config.js`**: Alle API keys en configuratie
 - **`test-complete-system.js`**: Complete systeem test
 - **`/Users/jordy/Desktop/Belangrijk/`**: Originele documentatie
 
-## 🎯 Volgende Stappen
-1. **Test de compensatie logica** met een nieuwe email
-2. **Verificatie LoveAble dashboard** functionaliteit
-3. **Monitoring** van alle tenant flows
-4. **Scaling** voor honderden tenants
+## 🎯 Volgende Stappen (PRIORITEIT)
+1. **🔧 Add Get Tenant Data node** - CRITIEK voor multi-tenant functionaliteit
+2. **🔧 Update AI Context Builder** - Tenant-specifieke business rules loading
+3. **🧪 Test multi-tenant isolation** - Verificatie met verschillende tenant emails
+4. **📊 Verificatie LoveAble dashboard** functionaliteit
+5. **🚀 Scaling** voor honderden tenants
 
-## 🏗️ Architectuur
+## 🏗️ Architectuur (Origineel vs Nu)
 ```
-Gebruiker registreert → LoveAble Dashboard → Admin keurt goed → 
+Origineel: Gebruiker registreert → LoveAble Dashboard → Admin keurt goed → 
 N8N workflow gedupliceerd → Tenant configureert → AI verwerkt emails
+
+Nu: Gebruiker registreert → LoveAble Dashboard → Admin keurt goed → 
+1 workflow voor alle tenants → Tenant detection ontbreekt → AI gebruikt mogelijk verkeerde configuratie
 ```
 
-**Status**: ✅ Alle major issues opgelost, systeem operationeel  
+## 🚨 **IMMEDIATE ACTIONS NEEDED:**
+1. **Add Get Tenant Data node** to determine tenant from email
+2. **Update AI Context Builder** to load tenant-specific business rules  
+3. **Ensure all nodes use tenant_id** from Get Tenant Data
+4. **Test with emails** to different tenant addresses
+
+**Status**: ✅ Compensatie logica gefixed, ❌ Multi-tenant isolation problemen geïdentificeerd  
 **Repository**: https://github.com/jordyhaasje/autopilot-cursor-ai-analysis
