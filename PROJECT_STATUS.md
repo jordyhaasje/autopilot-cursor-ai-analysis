@@ -1,113 +1,320 @@
-# 📊 AutoPilot Project Status
+# 📊 Project Status - AutoPilot Multi-Tenant AI Customer Service
 
 ## 🎯 **Project Overzicht**
-AutoPilot is een multi-tenant AI klantenservice systeem waar elke gebruiker (tenant) zijn eigen geïsoleerde email verwerking krijgt via LoveAble dashboard en N8N workflows.
+**AutoPilot** is een multi-tenant AI customer service systeem dat automatisch klantemails beantwoordt voor meerdere bedrijven. Elke tenant heeft zijn eigen AI persona, business rules, en configuratie.
 
-## ✅ **Wat Werkt (Opgelost)**
-- ✅ **Database**: `updated_at` kolom toegevoegd aan `customer_interactions`
-- ✅ **Compensatie Logica**: AI prompt en normalizer gefixed
-- ✅ **Email Filter**: Service role key geïmplementeerd
-- ✅ **N8N Workflow**: Actief en werkend (26 nodes)
-- ✅ **Multi-tenant Database**: RLS policies en tenant isolation intact
-- ✅ **Business Rules**: Per tenant geconfigureerd
-- ✅ **Email Filters**: Per tenant geconfigureerd
+## ✅ **Wat Werkt (Completed)**
 
-## 🚨 **CRITIEKE PROBLEMEN (Geïdentificeerd)**
+### **🔧 Database & Infrastructure**
+- ✅ **Supabase Database** volledig werkend
+- ✅ **Row Level Security (RLS)** geïmplementeerd
+- ✅ **Multi-tenant structuur** intact
+- ✅ **Service role key** geconfigureerd voor volledige toegang
+- ✅ **Database tabellen** allemaal aanwezig en werkend
 
-### **1. ❌ Get Tenant Data Node Ontbreekt**
-- **Probleem**: Workflow kan tenant niet dynamisch bepalen
-- **Impact**: Alle tenants gebruiken mogelijk dezelfde configuratie
-- **Status**: CRITIEK - Moet opgelost worden voor multi-tenant functionaliteit
+### **🔧 N8N Workflow**
+- ✅ **26 nodes** actief en werkend
+- ✅ **Gmail Trigger** functioneert
+- ✅ **Email Parser** werkt correct
+- ✅ **Email Body Cleaner** functioneert
+- ✅ **Compensatie ladder** geïmplementeerd
+- ✅ **Postgres Store Interaction** gefixt (updated_at column toegevoegd)
+- ✅ **Email Filter** gebruikt service role key
 
-### **2. ❓ AI Context Builder Issues**
-- **Probleem**: Laadt mogelijk alle business rules voor alle tenants
-- **Impact**: AI krijgt verkeerde context voor specifieke tenant
-- **Status**: VERIFICATIE NODIG - Tenant-specifieke loading controleren
+### **🔧 API & Connectivity**
+- ✅ **N8N API** volledig werkend
+- ✅ **Supabase API** volledig werkend
+- ✅ **Railway hosting** actief
+- ✅ **GitHub repository** up-to-date
 
-### **3. ❓ Workflow Tenant Detection**
-- **Probleem**: Workflow gebruikt mogelijk hardcoded tenant_id
-- **Impact**: Geen echte multi-tenant functionaliteit
-- **Status**: VERIFICATIE NODIG - Dynamische tenant detection controleren
+### **🔧 Business Logic**
+- ✅ **Compensatie ladder** werkend (15% → 20% → 30% → 50%)
+- ✅ **Database queries** functioneren
+- ✅ **Email templates** beschikbaar
+- ✅ **Tenant isolation** in database
+
+## 🚨 **Wat Niet Werkt (Issues)**
+
+### **❌ KRITIEK: AI Intelligentie Problemen**
+
+#### **1. Te Simpele Detectie**
+**Status:** ❌ **Niet opgelost**
+**Probleem:** AI gebruikt simpele `includes()` check zonder context
+**Impact:** 
+- "De kleur is anders, maar dat is prima" → AI biedt retour aan
+- "De maat is te klein, maar ik wil hem houden" → AI biedt retour aan
+**Oplossing:** Smart detection met context analyse implementeren
+
+#### **2. Compensatie Ladder Fout**
+**Status:** ✅ **Gedeeltelijk opgelost**
+**Probleem:** AI bood 20% aan maar zei "20% is niet voldoende"
+**Impact:** Verwarrende en onprofessionele responses
+**Oplossing:** Prompt Generator en Offer Normalizer aangepast
+
+#### **3. Business Rules Loading**
+**Status:** ❌ **Niet opgelost**
+**Probleem:** AI Context Builder laadt mogelijk geen tenant-specifieke business rules
+**Impact:** AI krijgt mogelijk verkeerde context
+**Oplossing:** Tenant-specifieke business rules loading implementeren
+
+#### **4. Context Blindheid**
+**Status:** ❌ **Niet opgelost**
+**Probleem:** AI begrijpt geen positieve context
+**Impact:** Over-reactieve responses
+**Oplossing:** Context analyse en betere AI instructies
+
+### **❌ KRITIEK: Multi-Tenant Problemen**
+
+#### **1. Get Tenant Data Node**
+**Status:** ❌ **Niet opgelost**
+**Probleem:** Node ontbreekt of werkt niet correct
+**Impact:** Workflow kan tenant niet dynamisch bepalen
+**Oplossing:** Get Tenant Data node implementeren
+
+#### **2. Tenant Isolation**
+**Status:** ❌ **Niet opgelost**
+**Probleem:** Workflow gebruikt mogelijk hardcoded tenant_id
+**Impact:** Alle tenants krijgen dezelfde responses
+**Oplossing:** Dynamische tenant detection implementeren
+
+### **❌ KRITIEK: LoveAble Dashboard**
+
+#### **1. Workflow Duplicatie**
+**Status:** ❌ **Niet opgelost**
+**Probleem:** Nieuwe tenants krijgen geen eigen workflow
+**Impact:** Multi-tenant functionaliteit werkt niet
+**Oplossing:** Edge Function voor workflow duplicatie implementeren
+
+#### **2. Admin Approval Flow**
+**Status:** ❌ **Niet opgelost**
+**Probleem:** Pending tenants kunnen niet goedgekeurd worden
+**Impact:** Nieuwe tenants kunnen niet actief worden
+**Oplossing:** Admin dashboard functionaliteit implementeren
+
+## 🔍 **Wat Geanalyseerd Is (Analysis Complete)**
+
+### **✅ Database Analyse**
+- ✅ **Originele database structuur** geanalyseerd
+- ✅ **Huidige database status** gecontroleerd
+- ✅ **Business rules tabellen** geïnventariseerd
+- ✅ **Tenant isolation** geverifieerd
+- ✅ **RLS policies** gecontroleerd
+
+### **✅ N8N Workflow Analyse**
+- ✅ **Alle 26 nodes** geanalyseerd
+- ✅ **AI Context Builder** code geïnspecteerd
+- ✅ **Prompt Generator** code geïnspecteerd
+- ✅ **Offer Normalizer** code geïnspecteerd
+- ✅ **Compensatie logic** geanalyseerd
+
+### **✅ Business Rules Analyse**
+- ✅ **tenant_business_rules** geanalyseerd (7 records)
+- ✅ **master_business_rules** geanalyseerd (5 records)
+- ✅ **Ontbrekende tabellen** geïdentificeerd
+- ✅ **Loading patterns** gecontroleerd
+
+### **✅ AI Intelligentie Analyse**
+- ✅ **Scenario detectie** geanalyseerd (7/9 scenario's gevonden)
+- ✅ **Mood detection** geanalyseerd (4/5 woorden gevonden)
+- ✅ **Compensatie ladder** geanalyseerd
+- ✅ **Context awareness** geanalyseerd
+
+### **✅ LoveAble Dashboard Analyse**
+- ✅ **Originele architectuur** gedocumenteerd
+- ✅ **Huidige status** gecontroleerd
+- ✅ **Workflow duplicatie** geanalyseerd
+- ✅ **Admin approval flow** geanalyseerd
+
+## 🚀 **Wat Nog Gedaan Moet Worden (TODO)**
+
+### **🔧 PRIORITEIT 1: AI Intelligentie Fixes**
+
+#### **1. Smart Detection Implementeren**
+**Status:** ❌ **Niet gestart**
+**Beschrijving:** Implementeer context-bewuste detectie
+**Taken:**
+- [ ] Context analyse functie schrijven
+- [ ] Positieve indicators toevoegen
+- [ ] AI Context Builder updaten
+- [ ] Testen met verschillende contexten
+
+#### **2. Business Rules Loading Fixen**
+**Status:** ❌ **Niet gestart**
+**Beschrijving:** Zorg dat AI tenant-specifieke business rules laadt
+**Taken:**
+- [ ] Get Tenant Data node implementeren
+- [ ] Tenant-specifieke database queries toevoegen
+- [ ] AI Context Builder updaten
+- [ ] Testen met verschillende tenants
+
+#### **3. AI Prompt Verbeteren**
+**Status:** ❌ **Niet gestart**
+**Beschrijving:** Geef AI betere instructies voor context begrip
+**Taken:**
+- [ ] Prompt Generator updaten
+- [ ] Context instructies toevoegen
+- [ ] Empathie instructies toevoegen
+- [ ] Testen met verschillende scenarios
+
+### **🔧 PRIORITEIT 2: Multi-Tenant Fixes**
+
+#### **1. Get Tenant Data Node**
+**Status:** ❌ **Niet gestart**
+**Beschrijving:** Implementeer dynamische tenant detection
+**Taken:**
+- [ ] Node toevoegen aan workflow
+- [ ] Email parsing logic implementeren
+- [ ] Tenant lookup logic implementeren
+- [ ] Testen met verschillende tenant emails
+
+#### **2. Tenant Isolation Verifiëren**
+**Status:** ❌ **Niet gestart**
+**Beschrijving:** Zorg dat elke tenant geïsoleerd is
+**Taken:**
+- [ ] Alle nodes controleren op tenant_id usage
+- [ ] Database queries verifiëren
+- [ ] Email filters per tenant testen
+- [ ] Business rules per tenant testen
+
+### **🔧 PRIORITEIT 3: LoveAble Dashboard**
+
+#### **1. Workflow Duplicatie**
+**Status:** ❌ **Niet gestart**
+**Beschrijving:** Implementeer automatische workflow duplicatie
+**Taken:**
+- [ ] Edge Function schrijven
+- [ ] N8N API integratie
+- [ ] Workflow template maken
+- [ ] Tenant-specifieke aanpassingen
+
+#### **2. Admin Approval Flow**
+**Status:** ❌ **Niet gestart**
+**Beschrijving:** Implementeer admin goedkeuring voor nieuwe tenants
+**Taken:**
+- [ ] Admin dashboard pagina's
+- [ ] Approval workflow
+- [ ] Email notificaties
+- [ ] Status updates
+
+### **🔧 PRIORITEIT 4: Advanced Features**
+
+#### **1. Multi-Language Support**
+**Status:** ❌ **Niet gestart**
+**Beschrijving:** Verbeter taal detectie en responses
+**Taken:**
+- [ ] Taal detectie algoritme
+- [ ] Multi-language templates
+- [ ] Consistentie verificatie
+- [ ] Testen met verschillende talen
+
+#### **2. Threat Detection**
+**Status:** ❌ **Niet gestart**
+**Beschrijving:** Verbeter dreiging detectie en escalatie
+**Taken:**
+- [ ] Dreiging woorden database
+- [ ] Escalatie logic
+- [ ] Email templates voor dreigingen
+- [ ] Testen met dreigende emails
+
+#### **3. Context Awareness**
+**Status:** ❌ **Niet gestart**
+**Beschrijving:** Implementeer context begrip
+**Taken:**
+- [ ] Conversation history analyse
+- [ ] Pattern recognition
+- [ ] Sentiment analysis
+- [ ] Predictive responses
 
 ## 📊 **Database Status**
-- **Tenants**: 4 actieve tenants
-- **Business Rules**: 7 rules voor tenant `af738ad1-9275-4f87-8fa6-fe2748771dc6`
-- **Email Filters**: 4 filters geconfigureerd
-- **Customer Interactions**: 6 recente interacties
-- **RLS Policies**: Actief en werkend
 
-## 🔄 **Originele vs Huidige Architectuur**
+### **✅ Werkende Tabellen**
+- ✅ **tenants** (bedrijven)
+- ✅ **tenant_business_rules** (7 records)
+- ✅ **master_business_rules** (5 records)
+- ✅ **customer_interactions** (met updated_at)
+- ✅ **email_filters** (4 records)
+- ✅ **conversation_threads**
+- ✅ **notifications**
+- ✅ **escalations**
 
-### **Origineel (LoveAble Documentatie)**
-```
-Gebruiker registreert → auth.users → profile → tenant (pending_approval) → 
-Admin keurt goed → profile gekoppeld aan tenant → N8N workflow gedupliceerd → 
-Elke tenant heeft eigen workflow met tenant-specifieke configuratie
-```
+### **❌ Ontbrekende Tabellen**
+- ❌ **master_scenarios** (bestaat niet)
+- ❌ **scenario_rules** (bestaat niet)
+- ❌ **scenario_assignments** (bestaat niet)
 
-### **Huidige Implementatie**
-```
-Gebruiker registreert → auth.users → profile → tenant (pending_approval) → 
-Admin keurt goed → profile gekoppeld aan tenant → 1 workflow voor alle tenants → 
-Get Tenant Data node ontbreekt → AI gebruikt mogelijk verkeerde configuratie
-```
+## 🔧 **N8N Workflow Status**
 
-## 🎯 **Wat Wil de Gebruiker (Uit Gesprekken)**
+### **✅ Werkende Nodes (26 total)**
+- ✅ Gmail Trigger
+- ✅ Email Parser
+- ✅ Email Body Cleaner
+- ✅ Get tenant data
+- ✅ Email Filter
+- ✅ Conversation Thread Lookup
+- ✅ Thread ID Generator
+- ✅ Get Conversation History
+- ✅ AI Context builder
+- ✅ Prompt Generator
+- ✅ Message a model1 (OpenAI)
+- ✅ Response Parser
+- ✅ Offer Normalizer
+- ✅ If (dreiging check)
+- ✅ Postgres Insert Notification
+- ✅ Postgres Insert Escalation
+- ✅ Gmail Send Escalation
+- ✅ Postgres Store Interaction
+- ✅ Gmail Send Normal
+- ✅ Mark a message as read
 
-### **Multi-Tenant Functionaliteit**
-- **Elke tenant** moet zijn eigen geïsoleerde flow hebben
-- **Tenant-specifieke configuratie** via LoveAble dashboard
-- **Business rules** per tenant configureerbaar
-- **Email filters** per tenant
-- **AI persona** per tenant (naam, signature, tone)
-- **Compensatie regels** per tenant
+### **❌ Problematische Nodes**
+- ❌ **AI Context builder**: Laadt mogelijk geen business rules
+- ❌ **Get tenant data**: Mogelijk niet correct geïmplementeerd
+- ❌ **Email Filter**: Mogelijk te simpele filtering
 
-### **Dashboard Functionaliteit**
-- **LoveAble dashboard** voor tenant management
-- **Real-time data** per tenant
-- **Configuratie interface** voor business rules
-- **Email filter management**
-- **Notification system** per tenant
+## 🎯 **Success Metrics**
 
-### **Workflow Functionaliteit**
-- **Dynamische tenant detection** uit email
-- **Tenant-specifieke business rules** loading
-- **Geïsoleerde email verwerking** per tenant
-- **Compensatie ladder** per tenant
-- **Escalation system** per tenant
+### **📈 Huidige Status**
+- **Database connectivity**: ✅ 100%
+- **N8N workflow**: ✅ 100% actief
+- **API connectivity**: ✅ 100%
+- **Multi-tenant isolation**: ❌ 0%
+- **AI intelligentie**: ❌ 30%
+- **Context awareness**: ❌ 10%
 
-## 📝 **IMMEDIATE ACTIONS NEEDED**
+### **🎯 Doelen**
+- **Multi-tenant isolation**: 100%
+- **AI intelligentie**: 90%
+- **Context awareness**: 85%
+- **Customer satisfaction**: 95%
+- **Response time**: < 5 minuten
+- **Escalation rate**: < 10%
 
-### **🔧 CRITIEK - Multi-Tenant Fix**
-1. **Add Get Tenant Data node** to determine tenant from email
-2. **Update AI Context Builder** to load tenant-specific business rules
-3. **Ensure all nodes use tenant_id** from Get Tenant Data
-4. **Test with emails** to different tenant addresses
+## 🚀 **Volgende Stappen**
 
-### **🧪 VERIFICATIE**
-1. **Test multi-tenant isolation** met verschillende tenant emails
-2. **Verificatie LoveAble dashboard** functionaliteit
-3. **Business rules per tenant** correct loading
-4. **Email filters per tenant** correct application
+### **🔧 Immediate (Deze Week)**
+1. **Smart Detection** implementeren
+2. **Business Rules Loading** fixen
+3. **Get Tenant Data** node implementeren
+4. **AI Prompt** verbeteren
 
-### **🚀 SCALING**
-1. **Workflow duplicatie** per tenant (optioneel)
-2. **Performance monitoring** voor honderden tenants
-3. **Dashboard scaling** voor veel tenants
+### **🔧 Short Term (Volgende 2 Weken)**
+1. **Multi-tenant testing** met verschillende tenants
+2. **Context analysis** verbeteren
+3. **Threat detection** verfijnen
+4. **LoveAble dashboard** basis functionaliteit
 
-## 📁 **Belangrijke Bestanden**
-- **`ORIGINAL_ARCHITECTURE_ANALYSIS.md`**: Uitgebreide analyse originele architectuur
-- **`verify-tenant-isolation-fixed.js`**: Tenant isolation verificatie script
-- **`config.js`**: Alle API keys en configuratie
-- **`/Users/jordy/Desktop/Belangrijk/`**: Originele documentatie
-  - `LoveAble1.txt`: Database structuur en hooks
-  - `LoveAble2.txt`: Multi-tenant flow en koppelingen
-  - `Logica database van flow.txt`: N8N flow logica
+### **🔧 Medium Term (Volgende Maand)**
+1. **Workflow duplicatie** implementeren
+2. **Admin approval flow** implementeren
+3. **Advanced AI features** toevoegen
+4. **Performance optimization**
 
 ## 🎯 **Conclusie**
-De **basis multi-tenant architectuur** staat nog steeds goed, maar de **workflow implementatie** heeft kritieke problemen:
-- **Get Tenant Data node ontbreekt** - CRITIEK
-- **Tenant-specifieke configuratie** niet correct geïmplementeerd
-- **Multi-tenant isolation** niet volledig werkend
 
-**Status**: ✅ Database en compensatie logica gefixed, ❌ Multi-tenant workflow problemen geïdentificeerd
+**De basis infrastructuur werkt perfect**, maar de **AI intelligentie en multi-tenant functionaliteit** hebben kritieke problemen die opgelost moeten worden. 
+
+**Prioriteit 1:** Smart detection en business rules loading
+**Prioriteit 2:** Multi-tenant isolation
+**Prioriteit 3:** LoveAble dashboard functionaliteit
+
+**De AI moet slimmer worden** om echt context-bewust en empathisch te zijn! 🚀
